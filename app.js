@@ -1,5 +1,6 @@
+const { urlencoded } = require('express');
 const express = require('express');
-
+const morgan = require('morgan');
 //express app
 const app = express();
 
@@ -11,13 +12,20 @@ app.listen(3000, () => {
     console.log('listening at 3000');
 })
 
+//serve static files
+app.use(express.static('public'));
+
+//encode incoming requests
+app.use(urlencoded({ extended = true }));
+
+//console ouput request detail using morgan 
+app.use(morgan('dev'));
+
 app.get('/', (req, res) => {
-    //res.send('<p>yoyo</p>');
     res.render('index', { title: 'HOME' });
 })
 
 app.get('/about', (req, res) => {
-    //res.send('<p>yoyo</p>');
     res.render('about', { title: 'ABOUT' });
 })
 
