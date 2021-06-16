@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/room.css">
+    <script>
+        const ROOM_ID = "<%= roomId %>";
+    </script>
+</head>
+<body>
+    <h1>This is a meeting room</h1>
+    <div id = "video-grid"></div>
+</body>
+<!-- to implement webRTC using peerjs -->
+<script src = "/socket.io/socket.io.js" defer></script>
+<script src = "/room.js" defer></script>
+</html>

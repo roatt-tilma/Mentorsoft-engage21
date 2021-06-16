@@ -1,25 +1,29 @@
-const { urlencoded } = require('express');
 const express = require('express');
 const morgan = require('morgan');
-//express app
+const roomRoutes = require('./routes/roomRoutes');
+
+
+//server config
+
 const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 
-//register view engine
+
+//set view engine, static folder and use morgan to see status in console
+
 app.set('view engine', 'ejs');
+app.use(express.static('public'));
+app.use(morgan('dev'));
+app.use(express.json());
 
-//listen for requests
-app.listen(3000, () => {
-    console.log('listening at 3000');
+
+server.listen(3000, () => {
+    console.log("Listening at 3000");
 })
 
-//serve static files
-app.use(express.static('public'));
 
-//encode incoming requests
-app.use(urlencoded({ extended = true }));
-
-//console ouput request detail using morgan 
-app.use(morgan('dev'));
+//routes
 
 app.get('/', (req, res) => {
     res.render('index', { title: 'HOME' });
@@ -29,6 +33,24 @@ app.get('/about', (req, res) => {
     res.render('about', { title: 'ABOUT' });
 })
 
+
+//room routes
+
+app.use('/room', roomRoutes);
+
+
+// invalid route
+
 app.use((req, res) => {
     res.status(404).render('404', { title: 'ERROR' });
+})
+
+
+//socket.io events
+
+io.on('connection', socket => {
+    socket.on('join-room', (roomId, userId) => {
+        socket.join(roomId);
+        socket.broadcast.to(roomId).emit('user-connected', userId);
+    })
 })
