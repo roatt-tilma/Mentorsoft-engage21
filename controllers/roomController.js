@@ -8,8 +8,6 @@ const start_room = (req, res) => {
     res.render('room', { title: "ROOM", roomId: req.params.room });
 }
 
-
-
 module.exports = {
     start_room,
     goto_room,

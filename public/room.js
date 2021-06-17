@@ -1,28 +1,45 @@
 const socket = io('/');
-const videoGrid = document.getElementById('video-grid');
 
-const myVideo = document.createElement('video');
-myVideo.muted = true;
+window.onload = () => {
+    init();
+}
 
-//to get video or audio from user, done by browser
-navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
-}).then(stream => {
-    addVideoStream(myVideo, stream);
-   
-    socket.on('user-connected', userId => {
-        connectToNewUser(userId, stream);
-    })
+async function init() {
+    const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+    });
+    const myVideo = document.createElement('video');
+    myVideo.srcObject = stream;
+    myVideo.muted = true;
+    myVideo.play();
+    const videoGrid = document.getElementById('video-grid'); 
+    videoGrid.append(myVideo);    
+    const peer = createpeer();
+    stream.getTracks().forEach(track => peer.addTrack(track, stream));
+}
 
-})
+function createpeer() {
+    const peer = new RTCPeerConnection({
+        iceServers: [
+            {
+                urls: "stun:stun.stunprotocol.org"
+            }
+        ]
+    });
+    
+    peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
+    
+    return peer;
+}
 
-socket.on('user-connected', userId => {
-    console.log('User Connected ' + userId);
-})
-
-function addVideoStream(video, stream){
-    video.srcObject = stream;
-    video.play();
-    videoGrid.append(video);
+async function handleNegotiationNeededEvent(peer){
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    const payload = {
+        sdp: peer.localDescription
+    }
+    const { data } = await axios.post('/broadcast', payload);
+    const desc = new RTCSessionDescription(data.sdp);
+    peer.setRemoteDescription(desc).catch(e => console.log(e));
 }

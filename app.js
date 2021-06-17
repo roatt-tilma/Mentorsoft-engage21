@@ -1,6 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const roomRoutes = require('./routes/roomRoutes');
+const broadcastRoutes = require('./routes/broadcastRoutes')
+
 
 
 //server config
@@ -39,6 +41,11 @@ app.get('/about', (req, res) => {
 app.use('/room', roomRoutes);
 
 
+// broadcast
+
+app.use('/broadcast', broadcastRoutes);
+
+
 // invalid route
 
 app.use((req, res) => {
@@ -49,8 +56,5 @@ app.use((req, res) => {
 //socket.io events
 
 io.on('connection', socket => {
-    socket.on('join-room', (roomId, userId) => {
-        socket.join(roomId);
-        socket.broadcast.to(roomId).emit('user-connected', userId);
-    })
+   console.log('connected via web sockets');
 })
