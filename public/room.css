@@ -1,16 +1,59 @@
+*{
+    margin: 0;
+}
 
-h1{
-    color: red;
+#video-section{
+    margin: 12px;
 }
 
 #video-grid{
     display: grid;
-    grid-template-columns: repeat(auto-fill, 300px);
-    grid-auto-rows: 300px;   
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-flow: column;
+    grid-gap: 1em;
+}
+
+#video-controls{
+    display: grid;
+    grid-template-columns: 80% 20%;
+    position: absolute;
+    bottom: 0;
+    padding: 12px 0;
+    text-align: center;
+    width: 100%;
+}
+
+#video-buttons{
+    text-align: center;
+}
+
+#video-buttons ul{
+    margin-top: 20px;
+    display: inline-flex;
+    gap: 12px;
+    list-style: none;
+}
+
+#video-buttons button{
+    height: 80px;
+    width: 80px;
+    border-radius: 50%;
+    background-color: #4548F4;
+    border: none;
+}
+
+#video-buttons button i{
+    color: white;
+}
+
+#my-video{
+    height: 120px;
 }
 
 video{
     width: 100%;
     height: 100%;
+    border-radius: 3px;
     object-fit: cover;
 }
+

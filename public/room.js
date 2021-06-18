@@ -9,12 +9,12 @@ async function init() {
         video: true,
         audio: true
     });
+    const myVideoHolder = document.getElementById('my-video');
     const myVideo = document.createElement('video');
     myVideo.srcObject = stream;
     myVideo.muted = true;
     myVideo.play();
-    const videoGrid = document.getElementById('video-grid'); 
-    videoGrid.append(myVideo);    
+    myVideoHolder.appendChild(myVideo);  
     const peer = createpeer();
     stream.getTracks().forEach(track => peer.addTrack(track, stream));
 }

@@ -1,15 +1,16 @@
+const webrtc = require('wrtc');
 
 let senderStream;
 
 const consumer = async ({ body }, res) => {
-    const peer = new RTCPeerConnection({
+    const peer = new webrtc.RTCPeerConnection({
         iceServers: [
             {
                 urls: 'stun:stun.stunprotocol.org'
             }
         ]
     });
-    const desc = new RTCSessionDescription(body.sdp);
+    const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
     senderStream.getTracks().forEach(track => peer.addTrack(track, senderStream));
     const answer = peer.createAnswer();
@@ -21,7 +22,7 @@ const consumer = async ({ body }, res) => {
 }
 
 const broadcast = async ({ body }, res) => {
-    const peer = new RTCPeerConnection({
+    const peer = new webrtc.RTCPeerConnection({
         iceServers: [
             {
                 urls: 'stun:stun.stunprotocol.org'
@@ -29,7 +30,7 @@ const broadcast = async ({ body }, res) => {
         ]
     });
     peer.ontrack = e => handleTrackEvent(e, peer);
-    const desc = new RTCSessionDescription(body.sdp);
+    const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
     const answer = await peer.createAnswer();
     await peer.setLocalDescription(answer);
