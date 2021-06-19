@@ -12,8 +12,6 @@ const view_broadcast = async ({ body }, res) => {
         ]
     });
     
-    peer.ontrack = e => handleTrackEvent(e, peer);
-    
     const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
     senderStream.getTracks().forEach(track => peer.addTrack(track, senderStream));
@@ -35,7 +33,7 @@ const broadcast = async ({ body }, res) => {
         ]
     });
     
-    peer.ontrack = e => handleTrackEvent(e, peer);
+    peer.ontrack = e => handleTrackEvent(e);
     
     const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
@@ -44,11 +42,12 @@ const broadcast = async ({ body }, res) => {
     const payload = {
         sdp: peer.localDescription
     }
-    res.json(payload);
+
     console.log('Hopefully connection is made for video stream ');
+    res.json(payload);
 }
 
-function handleTrackEvent(e, peer) {
+function handleTrackEvent(e) {
     console.log('Stream Received by server');
     senderStream = e.streams[0];
 }
