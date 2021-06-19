@@ -15,7 +15,7 @@
 
 #video-controls{
     display: grid;
-    grid-template-columns: 80% 20%;
+    grid-template-columns: 85% 15%;
     position: absolute;
     bottom: 0;
     padding: 12px 0;
@@ -35,8 +35,8 @@
 }
 
 #video-buttons button{
-    height: 80px;
-    width: 80px;
+    height: 70px;
+    width: 70px;
     border-radius: 50%;
     background-color: #4548F4;
     border: none;
@@ -48,6 +48,7 @@
 
 #my-video{
     height: 120px;
+    padding: 0px 20px 10px 0px;
 }
 
 video{

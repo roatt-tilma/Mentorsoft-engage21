@@ -1,9 +1,11 @@
 const express = require('express');
 const morgan = require('morgan');
 const roomRoutes = require('./routes/roomRoutes');
-const broadcastRoutes = require('./routes/broadcastRoutes')
+const broadcastRoutes = require('./routes/broadcastRoutes');
+const viewbroadcastRoutes = require('./routes/viewbroadcastRoutes');
+const { default: axios } = require('axios');
 
-
+const rooms = {};
 
 //server config
 
@@ -40,6 +42,19 @@ app.get('/about', (req, res) => {
 
 app.use('/room', roomRoutes);
 
+//login
+
+app.use('/hoststream', (req, res) => {
+    res.render('hoststream', { title: 'Mentor' });
+});
+
+app.use('/viewstream', (req, res) => {
+    res.render('viewstream', { title: 'Mentee' });
+});
+
+//viewbroadcast route
+
+app.use('/viewbroadcast', viewbroadcastRoutes);
 
 // broadcast
 
@@ -56,5 +71,8 @@ app.use((req, res) => {
 //socket.io events
 
 io.on('connection', socket => {
-   console.log('connected via web sockets');
+   console.log('UserId generated ' + socket.id);
+   socket.emit('join-room', {
+       userId: socket.id,
+   });
 })

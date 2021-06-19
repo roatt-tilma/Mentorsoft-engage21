@@ -5,7 +5,8 @@ const goto_room = (req, res) => {
 }
 
 const start_room = (req, res) => {
-    res.render('room', { title: "ROOM", roomId: req.params.room });
+    console.log('This is the room Id being generated ' + req.params.room);
+    res.render('room', { title: "ROOM", roomId: req.params.room});
 }
 
 module.exports = {
