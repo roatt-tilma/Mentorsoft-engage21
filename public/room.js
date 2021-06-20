@@ -1,4 +1,5 @@
 const socket = io('/');
+
 let USER_ID;
 
 window.onload = () => {
@@ -6,8 +7,10 @@ window.onload = () => {
 }
 
 socket.on('join-room', (data) => {
-   USER_ID = data.userId;     
+    USER_ID = data.userId
 });
+
+
 
 async function init() {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -56,6 +59,7 @@ async function handleNegotiationNeededEvent(peer, url){
 
 
 function handleTrackEvent(e){
+    console.log('Whaaaaat?');
     const videoGrid = document.getElementById('video-grid');
     const broadcastVideo = document.createElement('video');
     broadcastVideo.srcObject = e.streams[0];
