@@ -1,5 +1,5 @@
 const express = require('express');
-const morgan = require('morgan');
+//const morgan = require('morgan');
 
 //server config
 
@@ -11,7 +11,7 @@ const io = require('socket.io')(server);
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
-app.use(morgan('dev'));
+//app.use(morgan('dev'));
 app.use(express.json());
 
 module.exports = {

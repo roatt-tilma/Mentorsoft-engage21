@@ -1,18 +1,43 @@
 const socket = io('/');
 
-let USER_ID;
+let guid = () => {
+    let s4 = () => {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
+
+let USER_ID = guid();
 
 window.onload = () => {
     init();
 }
 
-socket.on('join-room', (data) => {
-    USER_ID = data.userId
+
+//send roomId and userId to backend connection
+socket.emit('join-room', {
+    roomId: ROOM_ID,
+    userId: USER_ID
 });
 
 
+//downstream user media from server when new user when connected
+socket.on('user-connected', async (data) => {
+    await new Promise(r => setTimeout(r, 1000));
+    if (data.userId !== USER_ID){
+        console.log('Recieved the userId in the front end ' + data.userId);
+        const peerRecieve = createPeer('/broadcast/viewbroadcastnew', data.userId);
+        peerRecieve.addTransceiver('video', { direction: 'recvonly' });
+        peerRecieve.ontrack = e => handleTrackEvent(e);
+    }
+});
 
+
+//this function will run when someone enters the room
 async function init() {
+
     const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
@@ -22,15 +47,36 @@ async function init() {
     myVideo.srcObject = stream;
     myVideo.muted = true;
     myVideo.play();
-    myVideoHolder.appendChild(myVideo);  
-    const peerSend = createPeer('/broadcast');
+    myVideoHolder.appendChild(myVideo);
+    
+
+    console.log('My userId = ' + USER_ID);
+    //upstream user media to the server
+    const peerSend = createPeer('/broadcast', USER_ID);
     stream.getTracks().forEach(track => peerSend.addTrack(track, stream));
-    const peerRecieve = createPeer('/broadcast/viewbroadcast');
-    peerRecieve.addTransceiver('video', { direction: 'recvonly' });
-    peerRecieve.ontrack = e => handleTrackEvent(e);
+    requestForAlreadyExistingStreams();
 }
 
-function createPeer(url){
+
+async function requestForAlreadyExistingStreams(){
+    const payload = {
+        roomId: ROOM_ID
+    }
+
+    const { data } = await axios.post('/broadcast/getnumberofalreadyexistingbroadcasts', payload);
+    
+    const count = data.number_of_already_existing_broadcasts;
+
+    for(let i = 0; i < count; i++){
+        const peerRecieve = createPeer('/broadcast/viewbroadcastprevious', USER_ID);
+        peerRecieve.addTransceiver('video', { direction: 'recvonly' });
+        peerRecieve.ontrack = e => handleTrackEvent(e);
+    }
+
+}
+
+//this function creates a connection with server, the purpose of the connection is specified by the url
+function createPeer(url, userId){
     const peer = new RTCPeerConnection({
         iceServers: [
             {
@@ -39,27 +85,31 @@ function createPeer(url){
         ]
     });
     
-    peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer, url);
+    peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer, url, userId);
 
     return peer;
 }
 
-async function handleNegotiationNeededEvent(peer, url){
+//function used in createPeer
+async function handleNegotiationNeededEvent(peer, url, userId){
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
+
     const payload = {
         sdp: peer.localDescription,
         roomId: ROOM_ID,
-        userId: USER_ID
+        myUserId: USER_ID,
+        userIdToReceiveFrom: userId,
     }
+
     const { data } = await axios.post(`${url}`, payload);
     const desc = new RTCSessionDescription(data.sdp);
     peer.setRemoteDescription(desc).catch(e => console.log(e));
 } 
 
-
+//handles incoming user media
 function handleTrackEvent(e){
-    console.log('Whaaaaat?');
+    console.log('received something');
     const videoGrid = document.getElementById('video-grid');
     const broadcastVideo = document.createElement('video');
     broadcastVideo.srcObject = e.streams[0];

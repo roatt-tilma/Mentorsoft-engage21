@@ -1,7 +1,7 @@
 const roomRoutes = require('./routes/roomRoutes');
 const broadcastRoutes = require('./routes/broadcastRoutes');
 const viewbroadcastRoutes = require('./routes/viewbroadcastRoutes');
-const { app, server} = require('./server');
+const { app, server } = require('./server');
 
 //start server
 

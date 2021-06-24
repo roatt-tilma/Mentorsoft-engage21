@@ -3,7 +3,7 @@ class User{
         this.roomId = roomId;
         this.userId = userId;
         this.userStream = null;
-        this.peersForDownStream = new Set();
+        this.receivedFrom = new Set();
         this.name = 'Guest';
     }
 }

@@ -1,49 +1,10 @@
+const { values } = require('lodash');
 const webrtc = require('wrtc');
-const User = require('../classes/UserClass');
 const { io }  = require('../server');
+const methods = require('./functions');
 
-const userData = [];
-const userIds = new Set();
-const userDataIndex = new Map();
-
-const setupUser = (roomId, userId) => {
-    console.log('When is this running?');
-    console.log(userData);
-    console.log(userIds);
-    console.log(userDataIndex);
-    
-    if (!userIds.has(userId)){    
-        const new_user = new User(roomId, userId);
-        userIds.add(userId);
-        userData.push(new_user);
-        userDataIndex.set(userId, userData.length - 1);
-    }  
-
-}
-
-const view_broadcast = async ({ body }, res) => {
-    console.log('In viewbroadcast');
-    const peer = new webrtc.RTCPeerConnection({
-        iceServers: [
-            {
-                urls: 'stun:stun.stunprotocol.org'
-            }
-        ]
-    });
-    
-    const desc = new webrtc.RTCSessionDescription(body.sdp);
-    await peer.setRemoteDescription(desc);
-    //senderStream.getTracks().forEach(track => peer.addTrack(track, senderStream));
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-    const payload = {
-        sdp: peer.localDescription
-    }
-    res.json(payload);
-}
-
+//connection made to upstream data to the server
 const broadcast = async ({ body }, res) => {
-    console.log('New user ' + body.userId + ' entered in the room ' + body.roomId);
     const peer = new webrtc.RTCPeerConnection({
         iceServers: [
             {
@@ -52,8 +13,11 @@ const broadcast = async ({ body }, res) => {
         ]
     });
     
-    peer.ontrack = e => handleTrackEvent(e, body.userId);
-    setupUser(body.roomId, body.userId);
+    //create user object for this user
+    methods.setupUser(body.roomId, body.myUserId);
+
+    peer.ontrack = e => methods.handleTrackEvent(e, body.myUserId);
+
     const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
     const answer = await peer.createAnswer();
@@ -65,28 +29,96 @@ const broadcast = async ({ body }, res) => {
     res.json(payload);
 }
 
-function handleTrackEvent(e, userId) {
-    const index_in_userData = userDataIndex.get(userId);
-    const user = userData[index_in_userData];
-    user.userStream = e.streams[0];
-    console.log(index_in_userData);
-    console.log(user);
+
+//connection made to view broadcast from new user
+const view_broadcast_new = async ({ body }, res) => {
+    const peer = new webrtc.RTCPeerConnection({
+        iceServers: [
+            {
+                urls: 'stun:stun.stunprotocol.org'
+            }
+        ]
+    });
     
+    const desc = new webrtc.RTCSessionDescription(body.sdp);
+    await peer.setRemoteDescription(desc);
+    
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+    const payload = {
+        sdp: peer.localDescription
+    }
+    res.json(payload);
+
+    methods.broadcastStreamNew(body.myUserId, body.userIdToReceiveFrom, peer);
+
 }
+
+
+//to give the current number of members in a room
+const get_number_of_already_existing_broadcasts = ({ body }, res) => {
+    
+    const roomId = body.roomId;
+
+    const payload = {
+        number_of_already_existing_broadcasts: methods.getCount(roomId)
+    }
+
+    res.json(payload);
+
+}
+
+const view_broadcast_previous = async ({ body }, res) => {
+    const peer = new webrtc.RTCPeerConnection({
+        iceServers: [
+            {
+                urls: 'stun:stun.stunprotocol.org'
+            }
+        ]
+    });
+    
+    const desc = new webrtc.RTCSessionDescription(body.sdp);
+    await peer.setRemoteDescription(desc);
+    
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+    const payload = {
+        sdp: peer.localDescription
+    }
+    res.json(payload);
+
+    methods.broadcastStreamPrevious(body.myUserId, peer);
+
+}
+
+
+
 
 //socket.io events
 
 io.on('connection', socket => {
-    console.log('UserId generated ' + socket.id);
- 
-    socket.emit('join-room', {
-        userId: socket.id
+    //send socket id to frontend to be used as userId
+    // socket.emit('join-room', {
+    //     userId: socket.id
+    // });
+
+    //get roomId from frontend to make user join the room
+    socket.on('join-room', (data) => {
+        socket.join(data.roomId);
+        
+        //send userId of newly connected user to every member of the room
+        io.to(data.roomId).emit('user-connected', {
+            userId: data.userId,
+        });
     });
  
 })
 
+
+
 module.exports = {
     broadcast,
-    view_broadcast,
-    setupUser
+    view_broadcast_new,
+    get_number_of_already_existing_broadcasts,
+    view_broadcast_previous
 }
