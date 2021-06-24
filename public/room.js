@@ -25,6 +25,9 @@ async function init() {
     const peerRecieve = createPeer('/broadcast/viewbroadcast');
     peerRecieve.addTransceiver('video', { direction: 'recvonly' });
     peerRecieve.ontrack = e => handleTrackEvent(e);
+    const peerRecieve1 = createPeer('/broadcast/viewbroadcast');
+    peerRecieve1.addTransceiver('video', { direction: 'recvonly' });
+    peerRecieve1.ontrack = e => handleTrackEvent(e);
 }
 
 function createPeer(url){
