@@ -1,26 +1,9 @@
-const express = require('express');
-const morgan = require('morgan');
 const roomRoutes = require('./routes/roomRoutes');
 const broadcastRoutes = require('./routes/broadcastRoutes');
 const viewbroadcastRoutes = require('./routes/viewbroadcastRoutes');
-const { default: axios } = require('axios');
+const { app, server } = require('./server');
 
-const rooms = {};
-
-//server config
-
-const app = express();
-const server = require('http').Server(app);
-const io = require('socket.io')(server);
-
-
-//set view engine, static folder and use morgan to see status in console
-
-app.set('view engine', 'ejs');
-app.use(express.static('public'));
-app.use(morgan('dev'));
-app.use(express.json());
-
+//start server
 
 server.listen(3000, () => {
     console.log("Listening at 3000");
@@ -68,11 +51,3 @@ app.use((req, res) => {
 })
 
 
-//socket.io events
-
-io.on('connection', socket => {
-   console.log('UserId generated ' + socket.id);
-   socket.emit('join-room', {
-       userId: socket.id,
-   });
-})
