@@ -42,15 +42,16 @@ const view_broadcast_new = async ({ body }, res) => {
     
     const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
-    
+
+    methods.broadcastStreamNew(body.myUserId, body.userIdToReceiveFrom, peer);
+
     const answer = await peer.createAnswer();
     await peer.setLocalDescription(answer);
     const payload = {
         sdp: peer.localDescription
     }
     res.json(payload);
-
-    methods.broadcastStreamNew(body.myUserId, body.userIdToReceiveFrom, peer);
+    
 
 }
 
@@ -80,14 +81,14 @@ const view_broadcast_previous = async ({ body }, res) => {
     const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
     
+    methods.broadcastStreamPrevious(body.myUserId, peer);
+
     const answer = await peer.createAnswer();
     await peer.setLocalDescription(answer);
     const payload = {
         sdp: peer.localDescription
     }
     res.json(payload);
-
-    methods.broadcastStreamPrevious(body.myUserId, peer);
 
 }
 

@@ -43,23 +43,20 @@ const getCount = (roomId) => {
 
 
 const broadcastStreamPrevious = (myUserId, peer) => {
-    console.log('<---------------------------------------------------------------->');
+
     console.log('broadcast stream previous \nreceiverId: ' + myUserId);
+
     const receiver = userData.get(myUserId);
     const alreadyReceived = receiver.receivedFrom;
 
     for (const [userId, data] of userData) {
         if(!alreadyReceived.has(userId) && data.roomId === receiver.roomId){
             console.log('senderId: ' + userId);
-            console.log(userData);
             data.userStream.getTracks().forEach(track => peer.addTrack(track, data.userStream));
             receiver.receivedFrom.add(userId);
             break;
         }
     }
-
-    console.log(userData)
-    console.log('<---------------------------------------------------------------->');
 }
 
 module.exports = {

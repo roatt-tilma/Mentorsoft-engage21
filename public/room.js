@@ -11,6 +11,7 @@ let guid = () => {
 
 let USER_ID = guid();
 
+
 window.onload = () => {
     init();
 }
@@ -72,7 +73,7 @@ async function requestForAlreadyExistingStreams(){
         peerRecieve.addTransceiver('video', { direction: 'recvonly' });
         peerRecieve.ontrack = e => handleTrackEvent(e);
     }
-
+    
 }
 
 //this function creates a connection with server, the purpose of the connection is specified by the url
@@ -105,6 +106,7 @@ async function handleNegotiationNeededEvent(peer, url, userId){
     const { data } = await axios.post(`${url}`, payload);
     const desc = new RTCSessionDescription(data.sdp);
     peer.setRemoteDescription(desc).catch(e => console.log(e));
+
 } 
 
 //handles incoming user media
