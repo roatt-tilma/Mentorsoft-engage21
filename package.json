@@ -24,6 +24,5 @@
     "node": "14.17.1",
     "npm": "6.14.13"
   },
-  "engineStrict": true,
-  "cpu": ["x64"]
+  "engineStrict": true
 }
