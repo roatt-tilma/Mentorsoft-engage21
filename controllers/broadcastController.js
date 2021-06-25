@@ -93,8 +93,6 @@ const view_broadcast_previous = async ({ body }, res) => {
 }
 
 
-
-
 //socket.io events
 
 io.on('connection', socket => {

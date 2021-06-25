@@ -52,6 +52,7 @@ async function init() {
     
 
     console.log('My userId = ' + USER_ID);
+    
     //upstream user media to the server
     const peerSend = createPeer('/broadcast', USER_ID);
     stream.getTracks().forEach(track => peerSend.addTrack(track, stream));
@@ -109,11 +110,13 @@ async function handleNegotiationNeededEvent(peer, url, userId){
 
 } 
 
+const videoGrid = document.getElementById('video-grid');
+
 //handles incoming user media
 function handleTrackEvent(e){
     console.log('received something');
-    const videoGrid = document.getElementById('video-grid');
     const broadcastVideo = document.createElement('video');
+    console.log(e.streams);
     broadcastVideo.srcObject = e.streams[0];
     broadcastVideo.play();
     videoGrid.appendChild(broadcastVideo);
