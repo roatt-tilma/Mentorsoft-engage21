@@ -9,6 +9,11 @@ const broadcast = async ({ body }, res) => {
         iceServers: [
             {
                 urls: 'stun:stun.stunprotocol.org'
+            },
+            {
+                urls: "turn:13.250.13.83:3478?transport=udp",
+                username: "YzYNCouZM1mhqhmseWk6",
+                credential: "YzYNCouZM1mhqhmseWk6"
             }
         ]
     });
@@ -36,6 +41,11 @@ const view_broadcast_new = async ({ body }, res) => {
         iceServers: [
             {
                 urls: 'stun:stun.stunprotocol.org'
+            },
+            {
+                urls: "turn:13.250.13.83:3478?transport=udp",
+                username: "YzYNCouZM1mhqhmseWk6",
+                credential: "YzYNCouZM1mhqhmseWk6"
             }
         ]
     });
@@ -43,15 +53,23 @@ const view_broadcast_new = async ({ body }, res) => {
     const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
 
+    await new Promise(r => setTimeout(r, 1000));
+    
     methods.broadcastStreamNew(body.myUserId, body.userIdToReceiveFrom, peer);
 
     const answer = await peer.createAnswer();
+    
     await peer.setLocalDescription(answer);
+
     const payload = {
         sdp: peer.localDescription
     }
+
     res.json(payload);
-    
+
+    // await new Promise(r => setTimeout(r, 1000));
+
+    // methods.broadcastStreamNew(body.myUserId, body.userIdToReceiveFrom, peer);
 
 }
 
@@ -74,21 +92,35 @@ const view_broadcast_previous = async ({ body }, res) => {
         iceServers: [
             {
                 urls: 'stun:stun.stunprotocol.org'
+            },
+            {
+                urls: "turn:13.250.13.83:3478?transport=udp",
+                username: "YzYNCouZM1mhqhmseWk6",
+                credential: "YzYNCouZM1mhqhmseWk6"
             }
         ]
     });
     
     const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
-    
-    methods.broadcastStreamPrevious(body.myUserId, peer);
 
+    await new Promise(r => setTimeout(r, 1000));
+
+    methods.broadcastStreamPrevious(body.myUserId, peer);
+    
     const answer = await peer.createAnswer();
+    
     await peer.setLocalDescription(answer);
+
     const payload = {
         sdp: peer.localDescription
     }
+    
     res.json(payload);
+
+    // await new Promise(r => setTimeout(r, 1000));
+    
+    // methods.broadcastStreamPrevious(body.myUserId, peer);
 
 }
 

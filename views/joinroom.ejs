@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head.ejs') %>
+</head>
+<body>
+    <h1>For Guests</h1>
+    <form action="/room/connectGuest" method="POST">
+        <input type="text" name="roomId" id="roomId" placeholder="Enter Room Id You're Provided">
+        <input type="text" name="guestName" id="guestName" placeholder="Enter Your Name">
+        <input type="text" name="roomPassword" id="roomPassword" placeholder="Enter the Room Password">
+        <input type="submit" value="JOIN ROOM">
+    </form>
+</body>
+</html>

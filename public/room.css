@@ -2,29 +2,20 @@
     margin: 0;
 }
 
-body{
-    background-color: #333;
-}
-
 #video-section{
-    margin: 12px;
-}
-
-#video-grid{
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-flow: column;
-    grid-gap: 1em;
+    padding: 12px;
+    padding-bottom: 20px;
+    text-align: center;
+    height: 85vh;
 }
 
 #video-controls{
+    
+    height: 10vh;
     display: grid;
-    grid-template-columns: 85% 15%;
-    position: absolute;
-    bottom: 0;
-    padding: 12px 0;
-    text-align: center;
-    width: 100%;
+    grid-template-columns: 90% 10%;
+    width: 98vw;
+    margin: 0 12px;
 }
 
 #video-buttons{
@@ -32,15 +23,14 @@ body{
 }
 
 #video-buttons ul{
-    margin-top: 20px;
     display: inline-flex;
     gap: 12px;
     list-style: none;
 }
 
 #video-buttons button{
-    height: 70px;
-    width: 70px;
+    height: 9vh;
+    width: 9vh;
     border-radius: 50%;
     background-color: #4548F4;
     border: none;
@@ -51,14 +41,15 @@ body{
 }
 
 #my-video{
-    height: 120px;
-    padding: 0px 20px 10px 0px;
+    width: 100%;
+    height: 10vh;
+    object-fit: cover;
 }
 
-video{
+#other-video{
+    border-radius: 3px;
     width: 100%;
     height: 100%;
-    border-radius: 3px;
     object-fit: cover;
 }
 

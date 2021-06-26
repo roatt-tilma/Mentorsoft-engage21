@@ -3,7 +3,7 @@ const User = require('../classes/UserClass');
 const userData = new Map();
 
 const setupUser = (roomId, userId) => {
-    console.log('user Setup \nroomId: ' + roomId + '\nuserId: ' + userId);
+    console.log('User SetUp \nroomId: ' + roomId + '\nuserId: ' + userId);
     if (!userData.has(userId)){    
         const new_user = new User(roomId, userId);
         userData.set(userId, new_user);
@@ -12,7 +12,7 @@ const setupUser = (roomId, userId) => {
 
 //set the upstream from user to the corresponding user object
 const handleTrackEvent = (e, userId) => {
-    console.log('handle track event userId: ' + userId);
+    console.log('Add Stream in server userId: ' + userId);
     const user = userData.get(userId);
     user.userStream = e.streams[0];
 }
@@ -20,10 +20,9 @@ const handleTrackEvent = (e, userId) => {
 
 //send broadcast of new user to the users who are already there in the room
 const broadcastStreamNew = (myUserId, userIdToReceiveFrom, peer) => {
-    console.log('broadcast stream new \nreceiverId: ' + myUserId + '\nsenderId: ' + userIdToReceiveFrom);
+    console.log(myUserId + ' Get stream from new userId: ' + userIdToReceiveFrom);
     const sender = userData.get(userIdToReceiveFrom);
-    const stream = sender.userStream; 
-    stream.getTracks().forEach(track => peer.addTrack(track, stream));
+    sender.userStream.getTracks().forEach(track => peer.addTrack(track, sender.userStream));
     const receiver = userData.get(myUserId);
     receiver.receivedFrom.add(userIdToReceiveFrom);
 }
@@ -43,15 +42,13 @@ const getCount = (roomId) => {
 
 
 const broadcastStreamPrevious = (myUserId, peer) => {
-
-    console.log('broadcast stream previous \nreceiverId: ' + myUserId);
-
+    
     const receiver = userData.get(myUserId);
     const alreadyReceived = receiver.receivedFrom;
 
     for (const [userId, data] of userData) {
         if(!alreadyReceived.has(userId) && data.roomId === receiver.roomId){
-            console.log('senderId: ' + userId);
+            console.log(myUserId + ' Get stream from previous user: ' + userId);
             data.userStream.getTracks().forEach(track => peer.addTrack(track, data.userStream));
             receiver.receivedFrom.add(userId);
             break;
