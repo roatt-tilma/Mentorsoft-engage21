@@ -2,11 +2,24 @@
 <html lang="en">
 <head>
     <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/index.css">
 </head>
 <body>
-    <h1>Homepage</h1>
-    <a href="/host">Host a call</a><br>
-    <a href="/guest">Join a call</a>
+    <%- include('./partials/nav.ejs') %>
+    <div class="indexGridBox">
+        <div class="getStarted">
+            <h1>Get Started Now</h1>
+            <p>Create or Join a room</p>
+            <div class="indexButtons">
+                <button onclick="window.location.href = '/host'">Host</button>
+                <button onclick="window.location.href = '/guest'">Join</button>
+            </div>
+        </div>
+        <div class="papercupImage">
+            <img src="papercup.png" alt="papercupImage">
+        </div>
+    </div>
+    <%- include('./partials/footer.ejs')%>
 </body>
 <script src = "/index.js" defer></script>
 </html>

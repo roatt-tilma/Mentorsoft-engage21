@@ -3,8 +3,6 @@
 <head>
     <%- include('./partials/head.ejs') %>
     <link rel="stylesheet" href="/room.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
-    <script src="https://kit.fontawesome.com/df785adab4.js" crossorigin="anonymous"></script>
     <script>
         const ROOM_ID = "<%= roomId %>";
         const ROOM_NAME = "<%= roomName %>";
@@ -13,28 +11,12 @@
         const HOST_NAME = "<%= hostName %>";
     </script>
 </head>
+
 <body>
-    <section id = "video-section">
-        <video autoplay id = "other-video">
-            <!-- Guest Video Stream -->
-        </video>
-    </section>
-    <section id = "video-controls">
-        <div id = "video-buttons">
-            <ul>
-                <li><button><em class = "fa fa-video-camera fa-2x"></em></button></li>
-                <li><button><em class = "fa fa-microphone fa-2x"></em></button></li>
-                <li><button><em class = "fa fa-desktop fa-2x"></em></button></li>
-                <li><button  style = "background-color: #E33A6D"><em class = "fa fa-phone fa-2x"></em></button></li>
-            </ul>
-        </div>
-        <video autoplay id = "my-video">
-            <!-- Host Video Stream -->
-        </video>
-    </section>
+    <%- include('./partials/room.ejs') %>
 </body>
-<!-- to implement webRTC and webSockets -->
+
 <script src = "/socket.io/socket.io.js" defer></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src = "/host.js" defer></script>
+
 </html>
