@@ -14,6 +14,7 @@ socket.on('guest-joined', async (data) => {
     
     console.log('Guest Joined: ' + data.guestId);
     
+    console.log('Host Stream: ' + stream);
     peerHost.addStream(stream);
 
     const offer = await peerHost.createOffer();
@@ -55,6 +56,7 @@ function createPeer(){
         }
 
         if (e.candidate){
+            console.log(e.candidate);
             socket.emit('candidate', payload);
         }
     }
@@ -66,7 +68,7 @@ function createPeer(){
 
 function handleAddStreamEvent(e){
     console.log('Stream received');
-    console.log(e.stream)
+    console.log('Guest Stream: ' + e.stream);
     const otherVideo = document.getElementById('other-video');
     otherVideo.srcObject = e.stream;
 }

@@ -10,6 +10,7 @@ let peerGuest = createPeer();
 
 socket.on('offer', async (sdp) => {
     
+    console.log('Guest Stream: ' + stream);
     peerGuest.addStream(stream);
 
     await peerGuest.setRemoteDescription(sdp);
@@ -49,6 +50,7 @@ function createPeer(){
 
 function handleAddStreamEvent(e){
     console.log('Stream received');
+    console.log('Host Stream: ' + e.stream);
     const otherVideo = document.getElementById('other-video');
     otherVideo.srcObject = e.stream;
 }
