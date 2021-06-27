@@ -15,7 +15,7 @@ socket.on('guest-joined', async (data) => {
     console.log('Guest Joined: ' + data.guestId);
     
     console.log('Host Stream: ' + stream);
-    peerHost.addStream(stream);
+    stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
 
     const offer = await peerHost.createOffer();
     await peerHost.setLocalDescription(offer);
@@ -28,7 +28,7 @@ socket.on('guest-joined', async (data) => {
     socket.emit('offer', payload);
 })
 
-peerHost.onaddstream = (e) => handleAddStreamEvent(e);
+peerHost.ontrack = (e) => handleOnTrackEvent(e);
 
 socket.on('answer', (sdp) => {
     peerHost.setRemoteDescription(sdp).catch(e => console.log(e));
@@ -42,7 +42,7 @@ function createPeer(){
                 urls: "stun:stun.stunprotocol.org",
             },
             {
-                url: 'turn:numb.viagenie.ca',
+                urls: 'turn:numb.viagenie.ca',
                 credential: 'muazkh',
                 username: 'webrtc@live.com'
             }
@@ -66,11 +66,11 @@ function createPeer(){
 
 
 
-function handleAddStreamEvent(e){
+function handleOnTrackEvent(e){
     console.log('Stream received');
-    console.log('Guest Stream: ' + e.stream);
+    console.log('Guest Stream: ' + e.streams[0]);
     const otherVideo = document.getElementById('other-video');
-    otherVideo.srcObject = e.stream;
+    otherVideo.srcObject = e.streams[0];
 }
 
 
