@@ -39,6 +39,11 @@ function createPeer(){
         iceServers: [
             {
                 urls: "stun:stun.stunprotocol.org",
+            },
+            {
+                url: 'turn:numb.viagenie.ca',
+                credential: 'muazkh',
+                username: 'webrtc@live.com'
             }
         ]
     });

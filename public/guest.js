@@ -27,10 +27,6 @@ peerGuest.onaddstream = (e) => handleAddStreamEvent(e);
 socket.on('candidate', (candidate) => {
     const c = new RTCIceCandidate(candidate);
     peerGuest.addIceCandidate(c);
-    const payload = {
-        candidate,
-        roomId: ROOM_ID
-    }
 });
 
 
@@ -39,6 +35,11 @@ function createPeer(){
         iceServers: [
             {
                 urls: 'stun:stun.stunprotocol.org'
+            },
+            {
+                url: 'turn:numb.viagenie.ca',
+                credential: 'muazkh',
+                username: 'webrtc@live.com'
             }
         ]
     });
