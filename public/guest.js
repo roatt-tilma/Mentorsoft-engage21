@@ -25,6 +25,7 @@ socket.on('offer', async (sdp) => {
 peerGuest.onaddstream = (e) => handleAddStreamEvent(e);
 
 socket.on('candidate', (candidate) => {
+    console.log(candidate);
     const c = new RTCIceCandidate(candidate);
     peerGuest.addIceCandidate(c);
 });
@@ -48,7 +49,6 @@ function createPeer(){
 
 function handleAddStreamEvent(e){
     console.log('Stream received');
-    console.log(e.stream)
     const otherVideo = document.getElementById('other-video');
     otherVideo.srcObject = e.stream;
 }
