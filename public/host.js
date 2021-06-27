@@ -5,30 +5,76 @@ window.onload = () => {
     init();
 } 
 
-let peerSend;
 
-//respond when guest is connected
+let stream;
+let peerHost = createPeer();
+
+
 socket.on('guest-joined', async (data) => {
-    console.log('Guest Joined: ' + data.guestId);
-    peerSend = createPeer(); 
-    const stream = await navigator.mediaDevices.getUserMedia({
-        video: true
-    });
     
-    stream.getTracks().forEach(track => peerSend.addTrack(track, stream)); 
+    console.log('Guest Joined: ' + data.guestId);
+    
+    peerHost.addStream(stream);
+
+    const offer = await peerHost.createOffer();
+    await peerHost.setLocalDescription(offer);
+
+    const payload = {
+        sdp: peerHost.localDescription,
+        roomId: ROOM_ID
+    }
+
+    socket.emit('offer', payload);
 })
 
-socket.on('guest-response-for-receiving-stream-from-host', (guestData) => {
-    const desc = new RTCSessionDescription(guestData.sdp);
-    peerSend.setRemoteDescription(desc).catch(e => console.log(e));
+peerHost.onaddstream = (e) => handleAddStreamEvent(e);
+
+socket.on('answer', (sdp) => {
+    peerHost.setRemoteDescription(sdp).catch(e => console.log(e));
 });
+
+
+function createPeer(){
+    const peer = new RTCPeerConnection({
+        iceServers: [
+            {
+                urls: "stun:stun.stunprotocol.org",
+            }
+        ]
+    });
+
+    peer.onicecandidate = e => {
+        const payload = {
+            candidate: e.candidate,
+            roomId: ROOM_ID
+        }
+
+        if (e.candidate){
+            socket.emit('candidate', payload);
+        }
+    }
+
+    return peer;
+}
+
+
+
+function handleAddStreamEvent(e){
+    console.log('Stream received');
+    console.log(e.stream)
+    const otherVideo = document.getElementById('other-video');
+    otherVideo.srcObject = e.stream;
+}
+
+
 
 async function init() {
 
-    const stream = await navigator.mediaDevices.getUserMedia({
+    stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
     });
+
     const myVideo = document.getElementById('my-video');
     myVideo.srcObject = stream;
     myVideo.muted = true;
@@ -47,45 +93,3 @@ async function init() {
 }
 
 
-//this function creates a connection with the other user's browser
-function createPeer(){
-    const peer = new RTCPeerConnection({
-        iceServers: [
-            {
-                urls: "stun:stun.stunprotocol.org",
-            },
-            {
-                urls: "turn:13.250.13.83:3478?transport=udp",
-                username: "YzYNCouZM1mhqhmseWk6",
-                credential: "YzYNCouZM1mhqhmseWk6"
-            }
-        ]
-    });
-    
-    peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
-
-    return peer;
-}
-
-//function used in createPeer
-async function handleNegotiationNeededEvent(peer){
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
-
-    const payload = {
-        sdp: peer.localDescription,
-        roomId: ROOM_ID
-    }
-
-    socket.emit('host-calling-guest-for-sending-stream', payload);
-} 
-
-const videoGrid = document.getElementById('video-grid');
-
-//handles incoming user media
-function handleTrackEvent(e){
-    const otherVideo = document.getElementById('other-video');
-    otherVideo.srcObject = e.streams[0];
-    otherVideo.muted = true;
-    otherVideo.play();
-}

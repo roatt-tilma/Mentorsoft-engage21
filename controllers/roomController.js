@@ -65,16 +65,16 @@ io.on('connection', socket => {
         
     });
 
-    socket.on('host-calling-guest-for-sending-stream', (hostData) => {
-        socket.broadcast.to(hostData.roomId).emit('host-calling-guest-for-sending-stream', {
-            sdp: hostData.sdp
-        });
+    socket.on('offer', (hostData) => {
+        socket.broadcast.to(hostData.roomId).emit('offer', hostData.sdp);
     });
 
-    socket.on('guest-response-for-receiving-stream-from-host', (guestData) => {
-        socket.broadcast.to(guestData.roomId).emit('guest-response-for-receiving-stream-from-host', {
-            sdp: guestData.sdp
-        });
+    socket.on('answer', (guestData) => {
+        socket.broadcast.to(guestData.roomId).emit('answer', guestData.sdp);
+    });
+
+    socket.on('candidate', (iceData) => {
+        socket.broadcast.to(iceData.roomId).emit('candidate', iceData.candidate);
     });
 
 });
