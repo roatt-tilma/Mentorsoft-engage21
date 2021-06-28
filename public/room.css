@@ -1,31 +1,52 @@
-*{
-    margin: 0;
-}
-
-#video-section{
-    padding: 12px;
-    padding-bottom: 20px;
-    text-align: center;
-    height: 85vh;
-}
-
-#video-controls{
-    
-    height: 10vh;
+body{
     display: grid;
-    grid-template-columns: 90% 10%;
-    width: 98vw;
-    margin: 0 12px;
+    grid-template-rows: 85% 15%;
+    row-gap: 8px;
 }
 
-#video-buttons{
-    text-align: center;
+#controls{
+    display: flex;   
+    justify-content: space-between;
 }
 
+#my-video{  
+    height: 14vh;
+    width: 14vw;
+    object-fit: cover;
+}
+
+#other-video-container{
+    height: 82vh;
+}
+
+
+#other-video{
+    border-radius: 3px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+#info-chat-buttons{
+    padding: 20px 0px 0px 20px;
+}
+
+#info-chat-buttons ul,
 #video-buttons ul{
+    padding: 0;
     display: inline-flex;
     gap: 12px;
     list-style: none;
+}
+
+#info-chat-buttons button{
+    background-color: #fff;
+    border: none;
+}
+
+#info-chat-buttons button em{
+    color: #0d0d29;
 }
 
 #video-buttons button{
@@ -40,16 +61,5 @@
     color: white;
 }
 
-#my-video{
-    width: 100%;
-    height: 10vh;
-    object-fit: cover;
-}
 
-#other-video{
-    border-radius: 3px;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
 

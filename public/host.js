@@ -98,6 +98,10 @@ async function init() {
     myVideo.srcObject = stream;
     myVideo.muted = true;
     myVideo.play();
+    const otherVideo = document.getElementById('other-video');
+    otherVideo.srcObject = stream;
+    otherVideo.muted = true;
+    otherVideo.play();
     
     socket.emit('room-created', {
         roomId: ROOM_ID,
