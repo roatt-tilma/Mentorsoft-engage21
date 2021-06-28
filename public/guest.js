@@ -8,44 +8,33 @@ window.onload = () => {
 let stream;
 let peerGuest = createPeer();
 
-socket.on('offer', async (sdp) => {
+socket.on('offer', async (offer) => {
     
-    console.log('Guest Stream: ' + stream);
+    offer = new RTCSessionDescription(offer);
 
     stream.getTracks().forEach(track => peerGuest.addTrack(track, stream));
 
-    await peerGuest.setRemoteDescription(sdp);
+    await peerGuest.setRemoteDescription(offer);
     const answer = await peerGuest.createAnswer();
+
     await peerGuest.setLocalDescription(answer);
     const payload = {
         sdp: peerGuest.localDescription,
         roomId: ROOM_ID
     }
     socket.emit('answer', payload);
+    
 });
 
 peerGuest.ontrack = (e) => handleOnTrackEvent(e);
 
 socket.on('candidate', (candidate) => {
-    console.log(candidate);
-    const c = new RTCIceCandidate(candidate);
-    peerGuest.addIceCandidate(c);
+    candidate = new RTCIceCandidate(candidate);
+    peerGuest.addIceCandidate(candidate);
 });
 
-
 function createPeer(){
-    return new RTCPeerConnection({
-        iceServers: [
-            {
-                urls: 'stun:stun.stunprotocol.org'
-            },
-            {
-                urls: 'turn:numb.viagenie.ca',
-                credential: 'muazkh',
-                username: 'webrtc@live.com'
-            }
-        ]
-    });
+    return new RTCPeerConnection();
 }
 
 

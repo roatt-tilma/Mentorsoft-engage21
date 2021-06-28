@@ -17,51 +17,63 @@ socket.on('guest-joined', async (data) => {
     console.log('Host Stream: ' + stream);
     stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
 
-    const offer = await peerHost.createOffer();
-    await peerHost.setLocalDescription(offer);
+        const offer = await peerHost.createOffer();
+        await peerHost.setLocalDescription(offer);
+    
+        const payload = {
+            sdp: peerHost.localDescription,
+            roomId: ROOM_ID
+        }
+    
+        socket.emit('offer', payload);
 
-    const payload = {
-        sdp: peerHost.localDescription,
-        roomId: ROOM_ID
-    }
-
-    socket.emit('offer', payload);
 })
 
 peerHost.ontrack = (e) => handleOnTrackEvent(e);
 
-socket.on('answer', (sdp) => {
-    peerHost.setRemoteDescription(sdp).catch(e => console.log(e));
+peerHost.onicecandidate = (e) => {
+
+    const payload = {
+        candidate: e.candidate,
+        roomId: ROOM_ID
+    }
+
+    if (e.candidate){
+        console.log(e.candidate);
+        socket.emit('candidate', payload);
+    }
+
+}
+
+socket.on('answer', (answer) => {
+    answer = new RTCSessionDescription(answer);
+    peerHost.setRemoteDescription(answer).catch(e => console.log(e));
 });
 
 
 function createPeer(){
-    const peer = new RTCPeerConnection({
+    return new RTCPeerConnection({
         iceServers: [
             {
-                urls: "stun:stun.stunprotocol.org",
+                urls: "stun:stun.stunprotocol.org:3478"
             },
             {
-                urls: 'turn:numb.viagenie.ca',
-                credential: 'muazkh',
-                username: 'webrtc@live.com'
+                urls: "stun:stun.l.google.com:19302"
+            },
+            {
+                urls: "stun:stun1.l.google.com:19302"
+            },
+            {
+                urls: "stun:stun2.l.google.com:19302"
+            },
+            {
+                urls: "stun:stun3.l.google.com:19302"
+            },
+            {
+                urls: "stun:stun4.l.google.com:19302"
             }
         ]
     });
-
-    peer.onicecandidate = e => {
-        const payload = {
-            candidate: e.candidate,
-            roomId: ROOM_ID
-        }
-
-        if (e.candidate){
-            console.log(e.candidate);
-            socket.emit('candidate', payload);
-        }
-    }
-
-    return peer;
 }
 
 

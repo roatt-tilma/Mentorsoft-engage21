@@ -18,11 +18,11 @@ app.get('/', (req, res) => {
 app.use('/room', roomRoutes);
 
 app.use('/host', (req, res) => {
-    res.render('createroom', { title: 'Host' });
+    res.render('createroomform', { title: 'Host' });
 });
 
 app.use('/guest', (req, res) => {
-    res.render('joinroom', { title: 'Guest' });
+    res.render('joinroomform', { title: 'Guest' });
 });
 
 

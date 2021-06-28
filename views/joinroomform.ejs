@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <%- include('./partials/nav.ejs') %>
+    <div class="gridBox">
+        <div class="Image">
+            <img src="joinroom.jpg" alt="formImage"> 
+        </div>
+        <div class="content" style="margin: auto;">
+            <h1>Join a Room</h1>
+            <form action="/room/connectGuest" method="POST">
+                <input type="text" name="roomId" id="roomId" placeholder="Room Id">
+                <input type="text" name="guestName" id="guestName" placeholder="Your Name">
+                <input type="text" name="roomPassword" id="roomPassword" placeholder="Room Password">
+                <input class="btn" type="submit" value="JOIN ROOM">
+            </form>
+            <p>Want to host? <a href="/host">Click Here</a></p>
+        </div>
+    </div>
+    <%- include('./partials/footer.ejs') %>
+</body>
+</html>
