@@ -12,10 +12,10 @@
         </div>
         <div class="content" style="margin: auto;">
             <h1>Join a Room</h1>
-            <form action="/room/connectGuest" method="POST">
-                <input type="text" name="roomId" id="roomId" placeholder="Room Id">
+            <form action="/room/connect" method="POST">
+                <input type="text" name="roomId" id="roomId" placeholder="Room Id" required>
                 <input type="text" name="guestName" id="guestName" placeholder="Your Name">
-                <input type="text" name="roomPassword" id="roomPassword" placeholder="Room Password">
+                <input type="text" name="roomPassword" id="roomPassword" placeholder="Room Password" required>
                 <input class="btn" type="submit" value="JOIN ROOM">
             </form>
             <p>Want to host? <a href="/host">Click Here</a></p>

@@ -110,8 +110,9 @@ async function init() {
         hostName: HOST_NAME
     });
 
-    console.log('Host userId = ' + HOST_ID);
+    console.log('Host userId: ' + HOST_ID);
     console.log('Room Id: ' + ROOM_ID);
+    console.log('Room Password: ' + ROOM_PASSWORD);
 }
 
 
