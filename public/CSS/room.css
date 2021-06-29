@@ -55,11 +55,11 @@ body{
     border-radius: 50%;
     background-color: #4548F4;
     border: none;
+    cursor: pointer;
 }
 
 #video-buttons button em{
     color: white;
 }
-
 
 

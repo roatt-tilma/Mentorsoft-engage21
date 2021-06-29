@@ -9,6 +9,37 @@ window.onload = () => {
 let stream;
 let peerHost = createPeer();
 
+const video_btn = document.getElementById("video-btn");
+const audio_btn = document.getElementById("audio-btn");
+const screen_share_btn = document.getElementById("screen-share-btn");
+const end_call_btn = document.getElementById("end-call-btn");
+
+const video_icon = document.getElementById("video-icon");
+const audio_icon = document.getElementById("audio-icon");
+const screen_share_icon = document.getElementById("screen-share-icon");
+
+var video_bool = true;
+var audio_bool = true;
+
+video_btn.onclick = () => {
+    video_bool = !video_bool;
+    stream.getVideoTracks()[0].enabled = video_bool;
+    video_icon.classList.toggle('fa');
+    video_icon.classList.toggle('fa-video-camera');
+    video_icon.classList.toggle('fas');
+    video_icon.classList.toggle('fa-video-slash');
+}
+
+audio_btn.onclick = () => {
+    audio_bool = !video_bool;
+    stream.getAudioTracks()[0].enabled = audio_bool;
+    audio_icon.classList.toggle('fa');
+    audio_icon.classList.toggle('fa-microphone');
+    audio_icon.classList.toggle('fas');
+    audio_icon.classList.toggle('fa-microphone-slash');
+
+}
+
 
 socket.on('guest-joined', async (data) => {
     
@@ -99,7 +130,7 @@ async function init() {
 
     const myVideo = document.getElementById('my-video');
     myVideo.srcObject = stream;
-    myVideo.muted = true;
+    myVideo.muted = true; 
     myVideo.play();
     
     socket.emit('room-created', {
