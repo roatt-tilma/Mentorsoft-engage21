@@ -17,15 +17,15 @@ socket.on('guest-joined', async (data) => {
     console.log('Host Stream: ' + stream);
     stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
 
-        const offer = await peerHost.createOffer();
-        await peerHost.setLocalDescription(offer);
-    
-        const payload = {
-            sdp: peerHost.localDescription,
-            roomId: ROOM_ID
-        }
-    
-        socket.emit('offer', payload);
+    const offer = await peerHost.createOffer();
+    await peerHost.setLocalDescription(offer);
+
+    const payload = {
+        sdp: peerHost.localDescription,
+        roomId: ROOM_ID
+    }
+
+    socket.emit('offer', payload);
 
 })
 
@@ -83,6 +83,9 @@ function handleOnTrackEvent(e){
     console.log('Guest Stream: ' + e.streams[0]);
     const otherVideo = document.getElementById('other-video');
     otherVideo.srcObject = e.streams[0];
+    otherVideo.onloadedmetadata = () => {
+        console.log('video aayo re aayo re aayo');
+    }
 }
 
 
@@ -98,10 +101,6 @@ async function init() {
     myVideo.srcObject = stream;
     myVideo.muted = true;
     myVideo.play();
-    const otherVideo = document.getElementById('other-video');
-    otherVideo.srcObject = stream;
-    otherVideo.muted = true;
-    otherVideo.play();
     
     socket.emit('room-created', {
         roomId: ROOM_ID,

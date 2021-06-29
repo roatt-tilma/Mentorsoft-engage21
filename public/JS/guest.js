@@ -6,7 +6,7 @@ window.onload = () => {
 
 
 let stream;
-let peerGuest = createPeer();
+let peerGuest = new RTCPeerConnection();
 
 socket.on('offer', async (offer) => {
     
@@ -33,16 +33,16 @@ socket.on('candidate', (candidate) => {
     peerGuest.addIceCandidate(candidate);
 });
 
-function createPeer(){
-    return new RTCPeerConnection();
-}
-
 
 function handleOnTrackEvent(e){
     console.log('Stream received');
     console.log('Host Stream: ' + e.streams[0]);
     const otherVideo = document.getElementById('other-video');
     otherVideo.srcObject = e.streams[0];
+
+    otherVideo.onloadedmetadata = () => {
+        console.log('video aayo re aayo re aayo');
+    }
 }
 
 
