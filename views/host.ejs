@@ -14,6 +14,14 @@
 
 <body>
     <%- include('./partials/room.ejs') %>
+    <div id="info">
+        <ul>
+            <li>Room Name: <%= roomName %></li>
+            <li>Room ID: <%= roomId %></li>
+            <li>Room Password: <%= roomPassword %></li>
+            <li>Host Name: <%= hostName %></li>
+        </ul>
+    </div>
 </body>
 
 <script src = "/socket.io/socket.io.js" defer></script>

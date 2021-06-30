@@ -40,13 +40,9 @@ body{
     list-style: none;
 }
 
-#info-chat-buttons button{
-    background-color: #fff;
-    border: none;
-}
-
-#info-chat-buttons button em{
+#info-chat-buttons em{
     color: #0d0d29;
+    cursor: pointer;
 }
 
 #video-buttons button{
@@ -60,6 +56,19 @@ body{
 #video-buttons button em{
     color: white;
 }
+
+#info{
+    border: 1px solid #000;
+    width: 40vh;
+    position: absolute;
+    top: 74%;
+    left: 2.3%;
+}
+
+#info ul{
+    list-style: none;
+}
+
 
 
 

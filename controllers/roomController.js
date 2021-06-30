@@ -48,7 +48,7 @@ const connect_guest = (req, res) => {
         roomDet.guest.name = guestName;
         roomDet.guest.id = guestId;
         roomDet.isFull = 1;
-        res.render('guest', { title: roomId, guestId, roomId})
+        res.render('guest', { title: roomId, guestId, roomId, guestName})
     }
 
     else{

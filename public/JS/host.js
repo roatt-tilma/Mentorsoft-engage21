@@ -9,6 +9,41 @@ window.onload = () => {
 let stream;
 let peerHost = createPeer();
 
+var info_icon = document.getElementById('info-icon');
+var info = document.getElementById('info');
+info.style.display = 'none';
+var check = 0;
+
+
+
+info_icon.onclick = () =>{
+    if(check === 0){
+        info.style.display = 'block';
+        check = 1;
+    }
+    else{
+        info.style.display = 'none';
+        check = 0;
+    }
+}
+
+info_icon.onmouseover = () =>{
+    info.style.display = 'block';
+}
+
+info_icon.onmouseout = () =>{
+    if(check===0){
+    info.style.display = 'none';
+    }
+}
+
+document.onclick = (e) =>{
+    if(e.target.id !== 'info' && e.target.id !== 'info-icon' && check === 1){
+        info.style.display = 'none';
+        check = 0;
+    }
+}
+
 
 socket.on('guest-joined', async (data) => {
     
