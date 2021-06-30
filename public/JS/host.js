@@ -1,10 +1,8 @@
 const socket = io('/');
 
-
 window.onload = () => {
     init();
 } 
-
 
 let stream;
 let peerHost = createPeer();
@@ -38,6 +36,43 @@ audio_btn.onclick = () => {
     audio_icon.classList.toggle('fas');
     audio_icon.classList.toggle('fa-microphone-slash');
 
+var info_icon = document.getElementById('info-icon');
+var info = document.getElementById('info');
+var info_list = document.getElementById('info-list'); 
+
+info.style.display = 'none';
+var check = 0;
+
+info_icon.onclick = () =>{
+    if(check === 0){
+        info.style.display = 'block';
+        check = 1;
+    }
+    else{
+        info.style.display = 'none';
+        check = 0;
+    }
+}
+
+info_icon.onmouseover = () =>{
+    info.style.display = 'block';
+}
+
+info_icon.onmouseout = () =>{
+    if(check===0){
+    info.style.display = 'none';
+    }
+}
+
+document.onclick = (e) =>{
+    if(e.target.id !== 'info' 
+        && e.target.id !== 'info-icon'
+        && e.target.id !== 'info-list' 
+        && e.target.className !== 'info-list-elements'
+        && check === 1){
+        info.style.display = 'none';
+        check = 0;
+    }
 }
 
 
@@ -46,6 +81,14 @@ socket.on('guest-joined', async (data) => {
     console.log('Guest Joined: ' + data.guestId);
     
     console.log('Host Stream: ' + stream);
+
+    const guestName = document.createElement('li');
+    guestName.classList.add('info-list-elements');
+    guestName.appendChild(document.createTextNode('Guest Name: ' + data.guestName));
+    info_list.appendChild(guestName);
+
+
+    
     stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
 
     const offer = await peerHost.createOffer();
@@ -82,6 +125,7 @@ socket.on('answer', (answer) => {
 });
 
 
+
 function createPeer(){
     return new RTCPeerConnection({
         iceServers: [
@@ -98,7 +142,6 @@ function createPeer(){
 }
 
 
-
 function handleOnTrackEvent(e){
     console.log('Stream received');
     console.log('Guest Stream: ' + e.streams[0]);
@@ -108,7 +151,6 @@ function handleOnTrackEvent(e){
         console.log('video aayo re aayo re aayo');
     }
 }
-
 
 
 async function init() {
@@ -131,8 +173,10 @@ async function init() {
         hostName: HOST_NAME
     });
 
-    console.log('Host userId = ' + HOST_ID);
+    console.log('Host userId: ' + HOST_ID);
     console.log('Room Id: ' + ROOM_ID);
+    console.log('Room Password: ' + ROOM_PASSWORD);
+
 }
 
 

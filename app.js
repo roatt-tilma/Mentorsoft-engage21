@@ -1,4 +1,3 @@
-const express = require('express');
 const roomRoutes = require('./routes/roomRoutes');
 const { app, server } = require('./server');
 
