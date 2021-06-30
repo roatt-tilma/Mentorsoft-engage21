@@ -11,6 +11,8 @@ let peerHost = createPeer();
 
 var info_icon = document.getElementById('info-icon');
 var info = document.getElementById('info');
+var info_list = document.getElementById('info-list'); 
+
 info.style.display = 'none';
 var check = 0;
 
@@ -38,7 +40,11 @@ info_icon.onmouseout = () =>{
 }
 
 document.onclick = (e) =>{
-    if(e.target.id !== 'info' && e.target.id !== 'info-icon' && check === 1){
+    if(e.target.id !== 'info' 
+        && e.target.id !== 'info-icon'
+        && e.target.id !== 'info-list' 
+        && e.target.className !== 'info-list-elements'
+        && check === 1){
         info.style.display = 'none';
         check = 0;
     }
@@ -50,6 +56,14 @@ socket.on('guest-joined', async (data) => {
     console.log('Guest Joined: ' + data.guestId);
     
     console.log('Host Stream: ' + stream);
+
+    const guestName = document.createElement('li');
+    guestName.classList.add('info-list-elements');
+    guestName.appendChild(document.createTextNode('Guest Name: ' + data.guestName));
+    info_list.appendChild(guestName);
+
+
+    
     stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
 
     const offer = await peerHost.createOffer();

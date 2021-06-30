@@ -42,13 +42,16 @@ const connect_guest = (req, res) => {
     const guestId = randomId();
     let guestName = req.body.guestName;
 
+    const roomName = roomDet.room.name;
+    const hostName = roomDet.host.name;
+
     if (!guestName) guestName = 'Guest';
 
     if (givenPassword === roomPassword && roomDet.isFull === 0){
         roomDet.guest.name = guestName;
         roomDet.guest.id = guestId;
         roomDet.isFull = 1;
-        res.render('guest', { title: roomId, guestId, roomId, guestName})
+        res.render('guest', { title: roomId, guestId, roomId, guestName, roomName, hostName, roomPassword})
     }
 
     else{
@@ -87,7 +90,8 @@ io.on('connection', socket => {
         socket.join(data.roomId);
         
         socket.broadcast.to(data.roomId).emit('guest-joined', {
-            guestId: data.guestId
+            guestId: data.guestId,
+            guestName: data.guestName
         });
 
         

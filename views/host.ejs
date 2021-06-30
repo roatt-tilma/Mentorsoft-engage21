@@ -15,11 +15,11 @@
 <body>
     <%- include('./partials/room.ejs') %>
     <div id="info">
-        <ul>
-            <li>Room Name: <%= roomName %></li>
-            <li>Room ID: <%= roomId %></li>
-            <li>Room Password: <%= roomPassword %></li>
-            <li>Host Name: <%= hostName %></li>
+        <ul id = "info-list">
+            <li class="info-list-elements">Room Name: <%= roomName %></li>
+            <li class="info-list-elements">Room ID: <%= roomId %></li>
+            <li class="info-list-elements">Room Password: <%= roomPassword %></li>
+            <li class="info-list-elements">Username: <%= hostName %></li>
         </ul>
     </div>
 </body>

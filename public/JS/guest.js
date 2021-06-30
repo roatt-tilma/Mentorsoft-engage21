@@ -8,6 +8,48 @@ window.onload = () => {
 let stream;
 let peerGuest = new RTCPeerConnection();
 
+var info_icon = document.getElementById('info-icon');
+var info = document.getElementById('info');
+var info_list = document.getElementById('info-list'); 
+
+info.style.display = 'none';
+var check = 0;
+
+
+
+info_icon.onclick = () =>{
+    if(check === 0){
+        info.style.display = 'block';
+        check = 1;
+    }
+    else{
+        info.style.display = 'none';
+        check = 0;
+    }
+}
+
+info_icon.onmouseover = () =>{
+    info.style.display = 'block';
+}
+
+info_icon.onmouseout = () =>{
+    if(check===0){
+    info.style.display = 'none';
+    }
+}
+
+document.onclick = (e) =>{
+    if(e.target.id !== 'info' 
+        && e.target.id !== 'info-icon'
+        && e.target.id !== 'info-list' 
+        && e.target.className !== 'info-list-elements'
+        && check === 1){
+        info.style.display = 'none';
+        check = 0;
+    }
+}
+
+
 socket.on('offer', async (offer) => {
     
     offer = new RTCSessionDescription(offer);
@@ -58,7 +100,8 @@ async function init() {
 
     socket.emit('guest-joined', {
         guestId: GUEST_ID,
-        roomId: ROOM_ID
+        roomId: ROOM_ID,
+        guestName: GUEST_NAME
     });
 
     console.log('Guest userId = ' + GUEST_ID);
