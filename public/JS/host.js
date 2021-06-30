@@ -35,6 +35,7 @@ audio_btn.onclick = () => {
     audio_icon.classList.toggle('fa-microphone');
     audio_icon.classList.toggle('fas');
     audio_icon.classList.toggle('fa-microphone-slash');
+}
 
 var info_icon = document.getElementById('info-icon');
 var info = document.getElementById('info');
