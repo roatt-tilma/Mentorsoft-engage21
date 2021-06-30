@@ -4,16 +4,94 @@ window.onload = () => {
     init();
 } 
 
-let stream;
-let peerHost = createPeer();
+var stream;
+
+const peerHostSend = createPeer();
+
+peerHostSend.onnegotiationneeded = async () => {
+
+    const offer = await peerHostSend.createOffer();
+    await peerHostSend.setLocalDescription(offer);
+
+    const payload = {
+        sdp: peerHostSend.localDescription,
+        roomId: ROOM_ID
+    }
+
+    socket.emit('offer-by-host', payload);
+}
+
+peerHostSend.onicecandidate = (e) => {
+    const payload = {
+        roomId: ROOM_ID,
+        candidate: e.candidate
+    }
+
+    if(e.candidate){
+        socket.emit('candidate-by-host', payload)
+    }
+}
+
+socket.on('guest-joined', async (data) => {
+    
+    console.log('Guest Joined: ' + data.guestId);
+    
+    console.log('Host Stream: ' + stream);
+
+    const guestName = document.createElement('li');
+    guestName.classList.add('info-list-elements');
+    guestName.appendChild(document.createTextNode('Guest Name: ' + data.guestName));
+    info_list.appendChild(guestName);
+
+    stream.getTracks().forEach(track => peerHostSend.addTrack(track, stream));
+
+});
+
+socket.on('answer-by-guest', (answer) => {
+    answer = new RTCSessionDescription(answer);
+    peerHostSend.setRemoteDescription(answer).catch(e => console.log(e));
+
+    socket.emit('answer-set-by-host', ROOM_ID);
+});
+
+
+const peerHostReceive = new RTCPeerConnection();
+
+peerHostReceive.ontrack = (e) => handleOnTrackEvent(e);
+
+socket.on('offer-by-guest', async (offer) => {
+
+    offer = new RTCSessionDescription(offer);
+
+    await peerHostReceive.setRemoteDescription(offer);
+    const answer = await peerHostReceive.createAnswer();
+
+    await peerHostReceive.setLocalDescription(answer);
+    const payload = {
+        sdp: peerHostReceive.localDescription,
+        roomId: ROOM_ID
+    }
+
+    socket.emit('answer-by-host', payload);
+    
+});
+
+socket.on('candidate-by-guest', (candidate) => {
+    const c = new RTCIceCandidate(candidate);
+    peerHostReceive.addIceCandidate(c);
+});
+
+
+
+const otherVideo = document.getElementById('other-video');
+const myVideo = document.getElementById('my-video');
 
 const video_btn = document.getElementById("video-btn");
 const audio_btn = document.getElementById("audio-btn");
-const screen_share_btn = document.getElementById("screen-share-btn");
+
 
 const video_icon = document.getElementById("video-icon");
 const audio_icon = document.getElementById("audio-icon");
-const screen_share_icon = document.getElementById("screen-share-icon");
 
 var video_bool = true;
 var audio_bool = true;
@@ -36,9 +114,9 @@ audio_btn.onclick = () => {
     audio_icon.classList.toggle('fa-microphone-slash');
 }
 
-var info_icon = document.getElementById('info-icon');
-var info = document.getElementById('info');
-var info_list = document.getElementById('info-list'); 
+const info_icon = document.getElementById('info-icon');
+const info = document.getElementById('info');
+const info_list = document.getElementById('info-list'); 
 
 info.style.display = 'none';
 var check = 0;
@@ -79,7 +157,7 @@ document.onclick = (e) =>{
 const end_call_btn = document.getElementById('end-call-btn');
 
 end_call_btn.onclick = () => {
-    peerHost.close();
+    peerHostSend.close();
     socket.emit('end-call', {
         roomId: ROOM_ID
     });
@@ -88,59 +166,28 @@ end_call_btn.onclick = () => {
 
 
 
+const screen_share_btn = document.getElementById("screen-share-btn");
+const screen_share_icon = document.getElementById("screen-share-icon");
 
+var share_bool = false;
 
-socket.on('guest-joined', async (data) => {
-    
-    console.log('Guest Joined: ' + data.guestId);
-    
-    console.log('Host Stream: ' + stream);
-
-    const guestName = document.createElement('li');
-    guestName.classList.add('info-list-elements');
-    guestName.appendChild(document.createTextNode('Guest Name: ' + data.guestName));
-    info_list.appendChild(guestName);
-
-
-    
-    stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
-
-    const offer = await peerHost.createOffer();
-    await peerHost.setLocalDescription(offer);
-
-    const payload = {
-        sdp: peerHost.localDescription,
-        roomId: ROOM_ID
+screen_share_btn.onclick = async () => {
+    if (!share_bool){
+        share_bool = !share_bool;
+        const screen = await navigator.mediaDevices.getDisplayMedia();
+        stream.getTracks().forEach(track => peerHostSend.removeTrack(track, stream));
+        screen.getTracks().forEach(track => peerHostSend.addTrack(track, screen));
+        screen.getVideoTracks()[0].onended = () => {
+            share_bool = !share_bool;
+            stream.getTracks().forEach(track => peerHostSend.addTrack(track, stream));
+        }
     }
-
-    socket.emit('offer', payload);
-
-})
-
-peerHost.ontrack = (e) => handleOnTrackEvent(e);
-
-peerHost.onicecandidate = (e) => {
-
-    const payload = {
-        candidate: e.candidate,
-        roomId: ROOM_ID
-    }
-
-    if (e.candidate){
-        console.log(e.candidate);
-        socket.emit('candidate', payload);
-    }
-
+    
 }
-
-socket.on('answer', (answer) => {
-    answer = new RTCSessionDescription(answer);
-    peerHost.setRemoteDescription(answer).catch(e => console.log(e));
-});
 
 
 socket.on('end-call', async () => {
-    peerHost.close();
+    peerHostSend.close();
     alert('Guest has ended the call. Redirecting to homepage...');
     await new Promise(r => setTimeout(r, 3000));
     window.location.href = '/';
@@ -164,14 +211,14 @@ function createPeer(){
 
 function handleOnTrackEvent(e){
     console.log('Stream received');
-    console.log('Guest Stream: ' + e.streams[0]);
-    const otherVideo = document.getElementById('other-video');
+    console.log('Host Stream: ' + e.streams[0]);
+
     otherVideo.srcObject = e.streams[0];
+
     otherVideo.onloadedmetadata = () => {
         console.log('video aayo re aayo re aayo');
     }
 }
-
 
 async function init() {
 
@@ -180,7 +227,6 @@ async function init() {
         audio: true
     });
 
-    const myVideo = document.getElementById('my-video');
     myVideo.srcObject = stream;
     myVideo.muted = true; 
     myVideo.play();

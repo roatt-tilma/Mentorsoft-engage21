@@ -4,9 +4,77 @@ window.onload = () => {
     init();
 } 
 
+var stream;
 
-let stream;
-let peerGuest = new RTCPeerConnection();
+const peerGuestSend = createPeer();
+
+peerGuestSend.onnegotiationneeded = async () => {
+    const offer = await peerGuestSend.createOffer();
+    await peerGuestSend.setLocalDescription(offer);
+
+    const payload = {
+        sdp: peerGuestSend.localDescription,
+        roomId: ROOM_ID
+    }
+
+    socket.emit('offer-by-guest', payload);
+
+}
+
+socket.on('answer-by-host', (answer) => {
+    answer = new RTCSessionDescription(answer);
+    peerGuestSend.setRemoteDescription(answer).catch(e => console.log(e));
+});
+
+
+peerGuestSend.onicecandidate = (e) => {
+    const payload = {
+        roomId: ROOM_ID,
+        candidate: e.candidate
+    }
+
+    if(e.candidate){
+        socket.emit('candidate-by-guest', payload)
+    }
+}
+
+const peerGuestReceive = new RTCPeerConnection();
+
+peerGuestReceive.ontrack = (e) => handleOnTrackEvent(e);
+
+socket.on('offer-by-host', async (offer) => {
+    
+    offer = new RTCSessionDescription(offer);
+
+    await peerGuestReceive.setRemoteDescription(offer);
+    const answer = await peerGuestReceive.createAnswer();
+
+    await peerGuestReceive.setLocalDescription(answer);
+    const payload = {
+        sdp: peerGuestReceive.localDescription,
+        roomId: ROOM_ID
+    }
+    socket.emit('answer-by-guest', payload);
+    
+});
+
+
+socket.on('candidate-by-host', (candidate) => {
+    const c = new RTCIceCandidate(candidate);
+    peerGuestReceive.addIceCandidate(c);
+});
+
+
+socket.on('answer-set-by-host', () => {
+    stream.getTracks().forEach(track => peerGuestSend.addTrack(track, stream));
+})
+
+
+
+
+
+const otherVideo = document.getElementById('other-video');
+const myVideo = document.getElementById('my-video');
 
 const video_btn = document.getElementById("video-btn");
 const audio_btn = document.getElementById("audio-btn");
@@ -83,51 +151,41 @@ document.onclick = (e) =>{
 const end_call_btn = document.getElementById('end-call-btn');
 
 end_call_btn.onclick = () => {
-    peerGuest.close();
+    peerGuestReceive.close();
     socket.emit('end-call', {
         roomId: ROOM_ID
     });
     window.location.href = '/';
 }
 
-
-socket.on('offer', async (offer) => {
-    
-    offer = new RTCSessionDescription(offer);
-
-    stream.getTracks().forEach(track => peerGuest.addTrack(track, stream));
-
-    await peerGuest.setRemoteDescription(offer);
-    const answer = await peerGuest.createAnswer();
-
-    await peerGuest.setLocalDescription(answer);
-    const payload = {
-        sdp: peerGuest.localDescription,
-        roomId: ROOM_ID
-    }
-    socket.emit('answer', payload);
-    
-});
-
-peerGuest.ontrack = (e) => handleOnTrackEvent(e);
-
-socket.on('candidate', (candidate) => {
-    candidate = new RTCIceCandidate(candidate);
-    peerGuest.addIceCandidate(candidate);
-});
-
-
 socket.on('end-call', async () => {
-    peerGuest.close();
+    peerGuestReceive.close();
     alert('Host has ended the call. Redirecting to homepage...');
     await new Promise(r => setTimeout(r, 3000));
     window.location.href = '/';
 });
 
+
+function createPeer(){
+    return new RTCPeerConnection({
+        iceServers: [
+            { 
+                url: "stun:stun.l.google.com:19302" 
+            },
+            {
+                url: "turn:numb.viagenie.ca",
+                credential: "I1server",
+                username: "roarout20@gmail.com",
+            }
+        ]
+    });
+}
+
+
+
 function handleOnTrackEvent(e){
     console.log('Stream received');
     console.log('Host Stream: ' + e.streams[0]);
-    const otherVideo = document.getElementById('other-video');
     otherVideo.srcObject = e.streams[0];
 
     otherVideo.onloadedmetadata = () => {
@@ -142,7 +200,7 @@ async function init() {
         video: true,
         audio: true
     });
-    const myVideo = document.getElementById('my-video');
+
     myVideo.srcObject = stream;
     myVideo.muted = true;
 

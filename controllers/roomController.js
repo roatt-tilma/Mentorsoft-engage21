@@ -97,22 +97,38 @@ io.on('connection', socket => {
         
     });
 
-    socket.on('offer', (hostData) => {
-        socket.broadcast.to(hostData.roomId).emit('offer', hostData.sdp);
+    socket.on('offer-by-host', (hostData) => {
+        socket.broadcast.to(hostData.roomId).emit('offer-by-host', hostData.sdp);
+    });
+    
+    socket.on('offer-by-guest', (guestData) => {
+        socket.broadcast.to(guestData.roomId).emit('offer-by-guest', guestData.sdp);
     });
 
-    socket.on('answer', (guestData) => {
-        socket.broadcast.to(guestData.roomId).emit('answer', guestData.sdp);
+    socket.on('answer-by-guest', (guestData) => {
+        socket.broadcast.to(guestData.roomId).emit('answer-by-guest', guestData.sdp);
+    });
+    
+    socket.on('answer-by-host', (hostData) => {
+        socket.broadcast.to(hostData.roomId).emit('answer-by-host', hostData.sdp);
     });
 
-    socket.on('candidate', (iceData) => {
-        socket.broadcast.to(iceData.roomId).emit('candidate', iceData.candidate);
+    socket.on('candidate-by-host', (iceData) => {
+        socket.broadcast.to(iceData.roomId).emit('candidate-by-host', iceData.candidate);
+    });
+    
+    socket.on('candidate-by-guest', (iceData) => {
+        socket.broadcast.to(iceData.roomId).emit('candidate-by-guest', iceData.candidate);
+    });
+    
+    socket.on('answer-set-by-host', (roomId) => {
+        socket.broadcast.to(roomId).emit('answer-set-by-host');
     });
 
-
+    
     socket.on('end-call', (data) => {
         socket.broadcast.to(data.roomId).emit('end-call');
-    })
+    });
 });
 
 
