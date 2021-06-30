@@ -11,7 +11,6 @@ let peerGuest = new RTCPeerConnection();
 const video_btn = document.getElementById("video-btn");
 const audio_btn = document.getElementById("audio-btn");
 const screen_share_btn = document.getElementById("screen-share-btn");
-const end_call_btn = document.getElementById("end-call-btn");
 
 const video_icon = document.getElementById("video-icon");
 const audio_icon = document.getElementById("audio-icon");
@@ -81,6 +80,17 @@ document.onclick = (e) =>{
 }
 
 
+const end_call_btn = document.getElementById('end-call-btn');
+
+end_call_btn.onclick = () => {
+    peerGuest.close();
+    socket.emit('end-call', {
+        roomId: ROOM_ID
+    });
+    window.location.href = '/';
+}
+
+
 socket.on('offer', async (offer) => {
     
     offer = new RTCSessionDescription(offer);
@@ -106,6 +116,13 @@ socket.on('candidate', (candidate) => {
     peerGuest.addIceCandidate(candidate);
 });
 
+
+socket.on('end-call', async () => {
+    peerGuest.close();
+    alert('Host has ended the call. Redirecting to homepage...');
+    await new Promise(r => setTimeout(r, 3000));
+    window.location.href = '/';
+});
 
 function handleOnTrackEvent(e){
     console.log('Stream received');

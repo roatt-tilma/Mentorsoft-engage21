@@ -24,7 +24,6 @@ app.use('/guest', (req, res) => {
     res.render('joinroomform', { title: 'Guest' });
 });
 
-
 // invalid route
 app.use((req, res) => {
     res.status(404).render('404', { title: 'ERROR' });

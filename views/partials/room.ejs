@@ -1,3 +1,9 @@
+<script type = "text/javascript" >  
+    function preventBack() { window.history.forward(); }  
+    setTimeout("preventBack()", 0);  
+    window.onunload = function () { null };  
+</script> 
+
 <div id="other-video-container">
     <video autoplay id = "other-video">
         <!-- Other user's Video Stream -->

@@ -109,6 +109,10 @@ io.on('connection', socket => {
         socket.broadcast.to(iceData.roomId).emit('candidate', iceData.candidate);
     });
 
+
+    socket.on('end-call', (data) => {
+        socket.broadcast.to(data.roomId).emit('end-call');
+    })
 });
 
 

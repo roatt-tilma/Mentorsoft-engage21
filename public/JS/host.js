@@ -10,7 +10,6 @@ let peerHost = createPeer();
 const video_btn = document.getElementById("video-btn");
 const audio_btn = document.getElementById("audio-btn");
 const screen_share_btn = document.getElementById("screen-share-btn");
-const end_call_btn = document.getElementById("end-call-btn");
 
 const video_icon = document.getElementById("video-icon");
 const audio_icon = document.getElementById("audio-icon");
@@ -77,6 +76,20 @@ document.onclick = (e) =>{
 }
 
 
+const end_call_btn = document.getElementById('end-call-btn');
+
+end_call_btn.onclick = () => {
+    peerHost.close();
+    socket.emit('end-call', {
+        roomId: ROOM_ID
+    });
+    window.location.href = '/';
+}
+
+
+
+
+
 socket.on('guest-joined', async (data) => {
     
     console.log('Guest Joined: ' + data.guestId);
@@ -126,6 +139,12 @@ socket.on('answer', (answer) => {
 });
 
 
+socket.on('end-call', async () => {
+    peerHost.close();
+    alert('Guest has ended the call. Redirecting to homepage...');
+    await new Promise(r => setTimeout(r, 3000));
+    window.location.href = '/';
+});
 
 function createPeer(){
     return new RTCPeerConnection({
