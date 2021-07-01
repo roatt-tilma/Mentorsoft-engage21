@@ -21,8 +21,8 @@
 
     <div id = "video-buttons">
         <ul>
-            <li><button id="video-btn"><em id="video-icon" class = "fa fa-video-camera fa-2x"></em></button></li>
-            <li><button id="audio-btn"><em id="audio-icon" class = "fa fa-microphone fa-2x"></em></button></li>
+            <li><button id="video-btn"><em id="video-icon" class = "fas fa-video-slash fa-2x"></em></button></li>
+            <li><button id="audio-btn"><em id="audio-icon" class = "fas fa-microphone-slash fa-2x"></em></button></li>
             <li><button id="screen-share-btn"><em id="screen-share-icon" class = "fa fa-desktop fa-2x"></em></button></li>
             <li><button id="end-call-btn"  style = "background-color: #E33A6D"><em class = "fa fa-phone fa-2x"></em></button></li>
         </ul>
@@ -33,4 +33,14 @@
             Own Video Stream
         </video>
     </div>
+
+</div>
+
+<div id="info">
+    <ul id = "info-list">
+        <li class="info-list-elements">Room Name: <%= roomDet.room.name %></li>
+        <li class="info-list-elements">Room ID: <%= roomDet.room.id %></li>
+        <li class="info-list-elements">Room Password: <%= roomDet.room.password %></li>
+        <li class="info-list-elements">Host Name: <%= roomDet.host.name %></li>
+    </ul>
 </div>

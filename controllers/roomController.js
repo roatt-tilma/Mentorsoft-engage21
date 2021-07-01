@@ -16,6 +16,7 @@ const randomPassword = () => {
         .toString();
 }
 
+
 const roomDetails = new Map();
 
 const create_room = (req, res) => {
@@ -24,13 +25,37 @@ const create_room = (req, res) => {
     let roomPassword = req.body.roomPassword;
     const hostId = randomId();
     let hostName = req.body.hostName;
+    let guestId = null;
+    let guestName = null;
 
     if (!roomName) roomName = 'New Room';
     if (!roomPassword) roomPassword = randomPassword();
     if (!hostName) hostName = 'Host';
 
-    res.render('host', { title: 'ROOM', roomId, roomName, roomPassword, hostId, hostName});
+
+    roomDetails.set(roomId, {
+        host: {
+            id: hostId,
+            name: hostName
+        },
+        guest: {
+            id: guestId,
+            name: guestName
+        },
+        room: {
+            id: roomId,
+            name: roomName,
+            password: roomPassword
+        },
+        isFull: 0
+    });
+
+    const roomDet = roomDetails.get(roomId);
+
+    res.render('room', { title: 'ROOM', roomDet });
+
 }
+
 
 const connect_guest = (req, res) => {
     const givenPassword = req.body.roomPassword;
@@ -42,16 +67,13 @@ const connect_guest = (req, res) => {
     const guestId = randomId();
     let guestName = req.body.guestName;
 
-    const roomName = roomDet.room.name;
-    const hostName = roomDet.host.name;
-
     if (!guestName) guestName = 'Guest';
 
     if (givenPassword === roomPassword && roomDet.isFull === 0){
         roomDet.guest.name = guestName;
         roomDet.guest.id = guestId;
         roomDet.isFull = 1;
-        res.render('guest', { title: roomId, guestId, roomId, guestName, roomName, hostName, roomPassword})
+        res.render('room', { title: roomId, roomDet})
     }
 
     else{
@@ -61,70 +83,32 @@ const connect_guest = (req, res) => {
 }
 
 
+
 io.on('connection', socket => {
     
-    socket.on('room-created', (data) => {
-
+    socket.on('join-room', (data) => {
         socket.join(data.roomId);
 
-        roomDetails.set(data.roomId, {
-            host: {
-                id: data.hostId,
-                name: data.hostName
-            },
-            guest: {
-                id: null,
-                name: null
-            },
-            room: {
-                id: data.roomId,
-                name: data.roomName,
-                password: data.roomPassword
-            },
-            isFull: 0
-        });
+        const roomDet = roomDetails.get(data.roomId);
+
+        socket.broadcast.to(data.roomId).emit('join-room', roomDet);
+    });
+
+    socket.on('call', (data) => {
+        socket.broadcast.to(data.roomId).emit('call');
     })
 
-    socket.on('guest-joined', (data) => {
-        
-        socket.join(data.roomId);
-        
-        socket.broadcast.to(data.roomId).emit('guest-joined', {
-            guestId: data.guestId,
-            guestName: data.guestName
-        });
-
-        
+    socket.on('offer', (data) => {
+        socket.broadcast.to(data.roomId).emit('offer', data.sdp);
     });
 
-    socket.on('offer-by-host', (hostData) => {
-        socket.broadcast.to(hostData.roomId).emit('offer-by-host', hostData.sdp);
-    });
-    
-    socket.on('offer-by-guest', (guestData) => {
-        socket.broadcast.to(guestData.roomId).emit('offer-by-guest', guestData.sdp);
+    socket.on('answer', (data) => {
+        socket.broadcast.to(data.roomId).emit('answer', data.sdp);
     });
 
-    socket.on('answer-by-guest', (guestData) => {
-        socket.broadcast.to(guestData.roomId).emit('answer-by-guest', guestData.sdp);
+    socket.on('candidate', (data) => {
+        socket.broadcast.to(data.roomId).emit('candidate', data.candidate);
     });
-    
-    socket.on('answer-by-host', (hostData) => {
-        socket.broadcast.to(hostData.roomId).emit('answer-by-host', hostData.sdp);
-    });
-
-    socket.on('candidate-by-host', (iceData) => {
-        socket.broadcast.to(iceData.roomId).emit('candidate-by-host', iceData.candidate);
-    });
-    
-    socket.on('candidate-by-guest', (iceData) => {
-        socket.broadcast.to(iceData.roomId).emit('candidate-by-guest', iceData.candidate);
-    });
-    
-    socket.on('answer-set-by-host', (roomId) => {
-        socket.broadcast.to(roomId).emit('answer-set-by-host');
-    });
-
     
     socket.on('end-call', (data) => {
         socket.broadcast.to(data.roomId).emit('end-call');
