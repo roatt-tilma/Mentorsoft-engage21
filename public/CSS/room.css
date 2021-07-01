@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@100&display=swap');
+
 body{
     display: grid;
     grid-template-rows: 85% 15%;
     row-gap: 8px;
+    font-family: 'Work Sans', sans-serif;
 }
 
 #controls{
@@ -84,6 +87,7 @@ body{
 #info ul li{
     margin-top: 10px;
     font-style: normal;
+    font-weight: 600;
     font-size: 20px;
     letter-spacing: 0.04em;
     color: #fff;
