@@ -169,6 +169,7 @@ document.onclick = (e) =>{
         && e.target.id !== 'info-icon'
         && e.target.id !== 'info-list' 
         && e.target.className !== 'info-list-elements'
+        && e.target.id !== 'arrow'
         && check === 1){
         info.style.display = 'none';
         check = 0;
