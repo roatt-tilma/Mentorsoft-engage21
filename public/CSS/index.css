@@ -1,5 +1,16 @@
+*{
+    margin: 0px;
+    padding: 0px;
+}
+
+a{
+    text-decoration: none;
+    color: #4548f4;
+}
 
 input:focus{ outline: none; }
+
+
 
 body{
     margin: 20px;
@@ -93,9 +104,4 @@ body{
 .Image img{
     width: 100%;
     object-fit: cover;
-}
-
-a{
-    text-decoration: none;
-    color: #4548f4;
 }
