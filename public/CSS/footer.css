@@ -2,22 +2,21 @@ footer{
     font-family: 'Work Sans', sans-serif;
 
     position: fixed;
-    width: 100vw;
-    height: 18vh;
+    width: 100%;
     left: 0px;
     bottom: 5px;
+    padding: 0 4%;
+    box-sizing: border-box;
 
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-
+    justify-content: stretch;
 }
 
 .creators{
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
-    padding: 0px 20px 0px;
+    flex-wrap: wrap;
 }
 
 .creators h2{
@@ -25,6 +24,7 @@ footer{
     margin-bottom: 5px;
     color: #4548F4;
     letter-spacing: 0.04em;
+    font-size: 1rem;
 }
 
 .creators p{
@@ -34,6 +34,7 @@ footer{
     letter-spacing: 0.04em;
 
     font-weight: 600;
+    font-size: 0.85rem;
 }
 
 .copyright{
@@ -43,4 +44,14 @@ footer{
     letter-spacing: 0.04em;
 
     font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.8rem;
+}
+
+@media(max-width: 480px){
+    .creators{
+        text-align: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
 }

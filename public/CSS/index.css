@@ -13,7 +13,7 @@ input:focus{ outline: none; }
 
 
 body{
-    margin: 20px;
+    padding: 2% 4%;
 }
 
 .gridBox{
@@ -21,7 +21,6 @@ body{
     grid-template-columns: 1fr 1fr;
     font-family: 'Work Sans', sans-serif;
 }
-
 
 .content{
     margin-top: 10vh;
@@ -31,10 +30,10 @@ body{
 }
 
 .content h1{
-    margin: 0;
+    margin: 1rem 0;
     font-style: normal;
     font-weight: 600;
-    font-size: 64px;
+    font-size: 4rem;
     letter-spacing: 0.04em;
     
     color: #4548F4;
@@ -45,7 +44,7 @@ body{
 
     font-style: normal;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 0.9rem;
     letter-spacing: 0.04em;
 
     color: #676767;
@@ -75,8 +74,10 @@ body{
 }
 
 .btn{
-    width: 261px;
-    height: 72px;
+    min-width: 10rem;
+    max-width: 16rem;
+    height: 3.2rem;
+    padding: 0 1rem;
 
     border-radius: 8px;
     letter-spacing: 0.04em;
@@ -85,7 +86,7 @@ body{
 
     font-style: normal;
     font-weight: normal;
-    font-size: 24px;
+    font-size: 1.2rem;
     line-height: 28px;
     color: #fff;
 
@@ -104,4 +105,28 @@ body{
 .Image img{
     width: 100%;
     object-fit: cover;
+}
+
+@media (max-width: 720px) {
+    .gridBox {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .btn {
+        margin: auto;
+    }
+
+    .Image {
+        display: none;
+    }
+
+    .content h1 {
+        text-align: center;
+        font-size: 3rem;
+    }
+
+    input {
+        margin: auto;
+    }
 }

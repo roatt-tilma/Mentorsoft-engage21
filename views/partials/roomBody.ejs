@@ -4,36 +4,41 @@
     window.onunload = function () { null };  
 </script> 
 
-<div id="other-video-container">
-    <video autoplay id = "other-video">
-        <!-- Other user's Video Stream -->
-    </video>
-</div>
+<div class="container-flex">
 
-<div id = "controls">
-
-    <div id="info-chat-buttons">
-        <ul>
-            <li><em id="info-icon" class = "fas fa-info-circle fa-2x"></em></li>
-            <li><em id="chat-icon" class = "fas fa-comments fa-2x"></em></li>
-        </ul>
-    </div>
-
-    <div id = "video-buttons">
-        <ul>
-            <li><button id="video-btn"><em id="video-icon" class = "fas fa-video-slash fa-2x"></em></button></li>
-            <li><button id="audio-btn"><em id="audio-icon" class = "fas fa-microphone-slash fa-2x"></em></button></li>
-            <li><button id="screen-share-btn"><em id="screen-share-icon" class = "fa fa-desktop fa-2x"></em></button></li>
-            <li><button id="end-call-btn"  style = "background-color: #E33A6D"><em class = "fa fa-phone fa-2x"></em></button></li>
-        </ul>
+    <div id="other-video-container">
+        <video autoplay id = "other-video">
+            <!-- Other user's Video Stream -->
+        </video>
     </div>
     
-    <div id="my-video-container">
-        <video autoplay id = "my-video">
+    <div id = "controls">
+        
+        <div>
+            <em id="info-icon" class = "fas fa-info-circle"></em>
+        </div>
+        
+        <div id = "video-buttons">
+            <ul>
+                <li><button id="video-btn"><em id="video-icon" class = "fas fa-video-slash"></em></button></li>
+                <li><button id="audio-btn"><em id="audio-icon" class = "fas fa-microphone-slash"></em></button></li>
+                <li><button id="screen-share-btn"><em id="screen-share-icon" class = "fa fa-desktop"></em></button></li>
+                <li><button id="end-call-btn"  style = "background-color: #E33A6D"><em class = "fa fa-phone"></em></button></li>
+            </ul>
+        </div>
+        
+        <div>
+            <em id="chat-icon" class = "fas fa-comments"></em>
+        </div>
+        
+    </div>
+
+    <div class="my-video-container" id="my-video-container">
+        <em id="hide-show" class="fas fa-chevron-right"></em>
+        <video autoplay id = "my-video" class="my-video">
             <!-- Own Video Stream -->
         </video>
     </div>
-
 </div>
 
 <div id="info">

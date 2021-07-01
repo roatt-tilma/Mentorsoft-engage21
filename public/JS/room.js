@@ -27,6 +27,9 @@ const info_icon = document.getElementById('info-icon');
 const info = document.getElementById('info');
 const info_list = document.getElementById('info-list');
 
+const hide_show = document.getElementById('hide-show');
+
+
 const guestName = document.createElement('li');
 guestName.classList.add('info-list-elements');
 
@@ -201,6 +204,14 @@ screen_share_btn.onclick = async () => {
         screen.getTracks().forEach(track => peerHostSend.addTrack(track, screen));
 }
 
+
+
+hide_show.onclick = () => {
+    console.log('hide')
+    myVideo.classList.toggle('hide');
+    hide_show.classList.toggle('fa-chevron-right');
+    hide_show.classList.toggle('fa-chevron-left');
+}
 
 
 // functions related to webRTC connection
