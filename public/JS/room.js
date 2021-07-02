@@ -6,8 +6,7 @@ window.onload = () => {
 
 var stream;
 
-const peerSend = createPeer();
-const peerReceive = new RTCPeerConnection();
+const peer = createPeer();
 
 const myVideo = document.getElementById('my-video');
 const otherVideo = document.getElementById('other-video');
@@ -51,6 +50,8 @@ async function init() {
 
     myVideo.srcObject = stream;
     myVideo.muted = true; 
+
+    stream.getTracks().forEach(track => peer.addTrack(track, stream));
     
     socket.emit('join-room', {
         roomId: ROOM_ID,
@@ -60,7 +61,7 @@ async function init() {
 
 //make connection between the guest and the host
 
-socket.on('join-room', (roomDet) => {
+socket.on('join-room', async (roomDet) => {
     
     GUEST_ID = roomDet.guest.id;
     GUEST_NAME = roomDet.guest.name;
@@ -68,20 +69,20 @@ socket.on('join-room', (roomDet) => {
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
 
-    stream.getTracks().forEach(track => peerSend.addTrack(track, stream));
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
 
-    socket.emit('call', {
+    const payload = {
+        sdp: peer.localDescription,
         roomId: ROOM_ID
-    });
+    }
+
+    console.log('offer sent');
+    console.log(payload.sdp);
+
+    socket.emit('offer', payload);
 
 });
-
-
-
-socket.on('call', () => {
-    stream.getTracks().forEach(track => peerSend.addTrack(track, stream));
-});
-
 
 socket.on('offer', async (offer) => {
 
@@ -90,13 +91,13 @@ socket.on('offer', async (offer) => {
     console.log('Received offer:');
     console.log(offer);
     
-    await peerReceive.setRemoteDescription(offer);
-    const answer = await peerReceive.createAnswer();
+    await peer.setRemoteDescription(offer);
+    const answer = await peer.createAnswer();
 
-    await peerReceive.setLocalDescription(answer);
+    await peer.setLocalDescription(answer);
 
     const payload = {
-        sdp: peerReceive.localDescription,
+        sdp: peer.localDescription,
         roomId: ROOM_ID
     }
 
@@ -113,7 +114,7 @@ socket.on('answer', (answer) => {
     console.log('received answer');
     console.log(answer);
 
-    peerSend.setRemoteDescription(answer).catch(e => console.log(e));
+    peer.setRemoteDescription(answer).catch(e => console.log(e));
 
     can_call_addIceCandidate = 1;
 
@@ -125,7 +126,7 @@ socket.on('candidate', (candidate) => {
         candidate = new RTCIceCandidate(candidate);
         console.log('candidate received');
         console.log(candidate);
-        peerReceive.addIceCandidate(candidate);
+        peer.addIceCandidate(candidate);
 
 })
 
@@ -201,7 +202,7 @@ document.onclick = (e) =>{
 
 
 end_call_btn.onclick = () => {
-    peerSend.close();
+    peer.close();
     socket.emit('end-call', {
         roomId: ROOM_ID
     });
@@ -209,7 +210,7 @@ end_call_btn.onclick = () => {
 }
 
 socket.on('end-call', async () => {
-    peerSend.close();
+    peer.close();
     alert('Guest has ended the call. Redirecting to homepage...');
     await new Promise(r => setTimeout(r, 3000));
     window.location.href = '/';
@@ -253,29 +254,14 @@ function createPeer(){
 }
 
 
-peerSend.onnegotiationneeded = async () => {
-    
-    const offer = await peerSend.createOffer();
-    await peerSend.setLocalDescription(offer);
 
-    const payload = {
-        sdp: peerSend.localDescription,
-        roomId: ROOM_ID
-    }
-
-    console.log('offer sent');
-    console.log(payload.sdp);
-
-    socket.emit('offer', payload);
-
-}
-
-
-peerReceive.ontrack = (e) => {
+peer.ontrack = (e) => {
     otherVideo.srcObject = e.streams[0];
 }
 
-peerSend.onicecandidate = (e) => {
+
+const handleOnIceCandidateEvent = (e) => {
+
     const payload = {
         candidate: e.candidate,
         roomId: ROOM_ID
@@ -285,7 +271,7 @@ peerSend.onicecandidate = (e) => {
     if (e.candidate && can_call_addIceCandidate === 1){
         console.log('candidate added by the sender');
         console.log(payload.candidate);
-        peerSend.addIceCandidate(new RTCIceCandidate(e.candidate));
+        peer.addIceCandidate(new RTCIceCandidate(e.candidate));
     }
 
     if (e.candidate){
@@ -295,3 +281,4 @@ peerSend.onicecandidate = (e) => {
     }
 }
 
+peer.onicecandidate = handleOnIceCandidateEvent;

@@ -94,10 +94,6 @@ io.on('connection', socket => {
         socket.broadcast.to(data.roomId).emit('join-room', roomDet);
     });
 
-    socket.on('call', (data) => {
-        socket.broadcast.to(data.roomId).emit('call');
-    })
-
     socket.on('offer', (data) => {
         socket.broadcast.to(data.roomId).emit('offer', data.sdp);
     });
