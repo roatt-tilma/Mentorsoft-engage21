@@ -257,6 +257,7 @@ peerSend.onnegotiationneeded = async () => {
 
 
 peerReceive.ontrack = (e) => {
+    console.log(e.stream[0]);
     otherVideo.srcObject = e.streams[0];
 }
 
