@@ -77,7 +77,8 @@ body{
     list-style: none;
 }
 
-#info-chat-buttons em{
+#info-icon,
+#chat-icon{
     color: #0d0d29;
     cursor: pointer;
 }

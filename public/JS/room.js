@@ -87,6 +87,7 @@ socket.on('offer', async (offer) => {
 
     offer = new RTCSessionDescription(offer);
     
+    console.log('Received offer:');
     console.log(offer);
     
     await peerReceive.setRemoteDescription(offer);
@@ -94,12 +95,13 @@ socket.on('offer', async (offer) => {
 
     await peerReceive.setLocalDescription(answer);
 
-    can_call_addIceCandidate = 1;
-
     const payload = {
         sdp: peerReceive.localDescription,
         roomId: ROOM_ID
     }
+
+    console.log('answer sent');
+    console.log(payload.sdp);
 
     socket.emit('answer', payload);
 });
@@ -108,20 +110,22 @@ socket.on('offer', async (offer) => {
 socket.on('answer', (answer) => {
     answer = new RTCSessionDescription(answer);
 
+    console.log('received answer');
     console.log(answer);
 
     peerSend.setRemoteDescription(answer).catch(e => console.log(e));
+
+    can_call_addIceCandidate = 1;
 
 });
 
 
 socket.on('candidate', (candidate) => {
 
-    if (can_call_addIceCandidate === 1){
         candidate = new RTCIceCandidate(candidate);
+        console.log('candidate received');
         console.log(candidate);
         peerReceive.addIceCandidate(candidate);
-    }
 
 })
 
@@ -259,6 +263,9 @@ peerSend.onnegotiationneeded = async () => {
         roomId: ROOM_ID
     }
 
+    console.log('offer sent');
+    console.log(payload.sdp);
+
     socket.emit('offer', payload);
 
 }
@@ -274,7 +281,16 @@ peerSend.onicecandidate = (e) => {
         roomId: ROOM_ID
     }
 
+    
+    if (e.candidate && can_call_addIceCandidate === 1){
+        console.log('candidate added by the sender');
+        console.log(payload.candidate);
+        peerSend.addIceCandidate(new RTCIceCandidate(e.candidate));
+    }
+
     if (e.candidate){
+        console.log('candidate sent');
+        console.log(payload.candidate);
         socket.emit('candidate', payload);
     }
 }
