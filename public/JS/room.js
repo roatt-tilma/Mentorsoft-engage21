@@ -86,13 +86,15 @@ socket.on('call', () => {
 socket.on('offer', async (offer) => {
 
     offer = new RTCSessionDescription(offer);
-
-    console.log('offer: ' + JSON.stringify(offer) );
-
+    
+    console.log(offer);
+    
     await peerReceive.setRemoteDescription(offer);
     const answer = await peerReceive.createAnswer();
 
     await peerReceive.setLocalDescription(answer);
+
+    can_call_addIceCandidate = 1;
 
     const payload = {
         sdp: peerReceive.localDescription,
@@ -105,8 +107,8 @@ socket.on('offer', async (offer) => {
 
 socket.on('answer', (answer) => {
     answer = new RTCSessionDescription(answer);
-    
-    console.log('answer: ' + JSON.stringify(answer));
+
+    console.log(answer);
 
     peerSend.setRemoteDescription(answer).catch(e => console.log(e));
 
@@ -114,12 +116,18 @@ socket.on('answer', (answer) => {
 
 
 socket.on('candidate', (candidate) => {
-    candidate = new RTCIceCandidate(candidate);
 
-    console.log('candidate received: ' + JSON.stringify(candidate));
+    if (can_call_addIceCandidate === 1){
+        candidate = new RTCIceCandidate(candidate);
+        console.log(candidate);
+        peerReceive.addIceCandidate(candidate);
+    }
 
-    peerReceive.addIceCandidate(candidate);
 })
+
+
+// addIceCandidate must only be called after the setRemoteDescription is called ie. answer is set
+var can_call_addIceCandidate = 0;
 
 
 
@@ -257,7 +265,6 @@ peerSend.onnegotiationneeded = async () => {
 
 
 peerReceive.ontrack = (e) => {
-    console.log(e.streams[0]);
     otherVideo.srcObject = e.streams[0];
 }
 
@@ -268,7 +275,6 @@ peerSend.onicecandidate = (e) => {
     }
 
     if (e.candidate){
-        console.log('candidate sent: ' + JSON.stringify(payload.candidate));
         socket.emit('candidate', payload);
     }
 }
