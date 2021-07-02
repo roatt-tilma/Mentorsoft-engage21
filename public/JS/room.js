@@ -87,7 +87,7 @@ socket.on('offer', async (offer) => {
 
     offer = new RTCSessionDescription(offer);
 
-    console.log('offer: ' + offer );
+    console.log('offer: ' + JSON.stringify(offer) );
 
     await peerReceive.setRemoteDescription(offer);
     const answer = await peerReceive.createAnswer();
@@ -106,7 +106,7 @@ socket.on('offer', async (offer) => {
 socket.on('answer', (answer) => {
     answer = new RTCSessionDescription(answer);
     
-    console.log('answer: ' + answer);
+    console.log('answer: ' + JSON.stringify(answer));
 
     peerSend.setRemoteDescription(answer).catch(e => console.log(e));
 
@@ -116,7 +116,7 @@ socket.on('answer', (answer) => {
 socket.on('candidate', (candidate) => {
     candidate = new RTCIceCandidate(candidate);
 
-    console.log('candidate received: ' + candidate);
+    console.log('candidate received: ' + JSON.stringify(candidate));
 
     peerReceive.addIceCandidate(candidate);
 })
@@ -266,9 +266,8 @@ peerSend.onicecandidate = (e) => {
         roomId: ROOM_ID
     }
 
-    console.log('candidate sent: ' + payload.candidate);
-    
     if (e.candidate){
+        console.log('candidate sent: ' + JSON.stringify(payload.candidate));
         socket.emit('candidate', payload);
     }
 }
