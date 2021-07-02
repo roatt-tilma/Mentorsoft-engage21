@@ -35,23 +35,23 @@ guestName.classList.add('info-list-elements');
 
 async function init() {
 
-    if(GUEST_NAME){
-        guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
-        info_list.appendChild(guestName);
-    }
-    
     stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
     });
+
+    if(GUEST_NAME){
+        guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
+        info_list.appendChild(guestName);
+        stream.getTracks().forEach(track => peer.addTrack(track, stream));
+    }
+
 
     stream.getVideoTracks()[0].enabled = video_bool;
     stream.getAudioTracks()[0].enabled = audio_bool;
 
     myVideo.srcObject = stream;
     myVideo.muted = true; 
-
-    stream.getTracks().forEach(track => peer.addTrack(track, stream));
     
     socket.emit('join-room', {
         roomId: ROOM_ID,
@@ -69,18 +69,22 @@ socket.on('join-room', async (roomDet) => {
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
 
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
-
-    const payload = {
-        sdp: peer.localDescription,
-        roomId: ROOM_ID
+    stream.getTracks().forEach(track => peer.addTrack(track, stream));
+    
+    peer.onnegotiationneeded = async () => {
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        
+        const payload = {
+            sdp: peer.localDescription,
+            roomId: ROOM_ID
+        }
+        
+        console.log('offer sent');
+        console.log(payload.sdp);
+        
+        socket.emit('offer', payload);
     }
-
-    console.log('offer sent');
-    console.log(payload.sdp);
-
-    socket.emit('offer', payload);
 
 });
 
@@ -154,7 +158,7 @@ video_btn.onclick = () => {
 var audio_bool = false;
 
 audio_btn.onclick = () => {
-    audio_bool = !video_bool;
+    audio_bool = !audio_bool;
     stream.getAudioTracks()[0].enabled = audio_bool;
     audio_icon.classList.toggle('fa');
     audio_icon.classList.toggle('fa-microphone');
