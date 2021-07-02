@@ -220,8 +220,13 @@ hide_show.onclick = () => {
 function createPeer(){
     return new RTCPeerConnection({
         iceServers: [
+            {
+                urls: "turn:numb.viagenie.ca",
+                credential: "I1server",
+                username: "roarout20@gmail.com"
+            },
             { 
-                url: "stun:stun.l.google.com:19302" 
+                urls: "stun:stun.l.google.com:19302" 
             }
         ]
     });
