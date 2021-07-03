@@ -27,7 +27,7 @@ const info = document.getElementById('info');
 const info_list = document.getElementById('info-list');
 
 const hide_show = document.getElementById('hide-show');
-
+const my_video_container = document.getElementById('my-video-container');
 
 const guestName = document.createElement('li');
 guestName.classList.add('info-list-elements');
@@ -232,7 +232,7 @@ screen_share_btn.onclick = async () => {
 
 
 hide_show.onclick = () => {
-    console.log('hide')
+    console.log('hide');
     myVideo.classList.toggle('hide');
     hide_show.classList.toggle('fa-chevron-right');
     hide_show.classList.toggle('fa-chevron-left');

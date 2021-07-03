@@ -1,7 +1,7 @@
 footer{
     font-family: 'Work Sans', sans-serif;
 
-    position: fixed;
+    position: absolute;
     width: 100%;
     left: 0px;
     bottom: 5px;

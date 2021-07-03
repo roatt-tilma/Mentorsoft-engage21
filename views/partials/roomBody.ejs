@@ -6,19 +6,19 @@
 
 <div class="container-flex">
 
-    <div id="other-video-container">
-        <video autoplay id = "other-video">
+    <div id="other-video-container" class="other-video-container">
+        <video autoplay id = "other-video" class="other-video">
             <!-- Other user's Video Stream -->
         </video>
     </div>
     
-    <div id = "controls">
+    <div class = "controls">
         
         <div>
-            <em id="info-icon" class = "fas fa-info-circle"></em>
+            <em id="info-icon" class = "info-icon fas fa-info-circle"></em>
         </div>
         
-        <div id = "video-buttons">
+        <div id = "video-buttons" class="video-buttons">
             <ul>
                 <li><button id="video-btn"><em id="video-icon" class = "fas fa-video-slash"></em></button></li>
                 <li><button id="audio-btn"><em id="audio-icon" class = "fas fa-microphone-slash"></em></button></li>
@@ -28,25 +28,25 @@
         </div>
         
         <div>
-            <em id="chat-icon" class = "fas fa-comments"></em>
+            <em id="chat-icon" class = "chat-icon fas fa-comments"></em>
         </div>
         
     </div>
 
     <div class="my-video-container" id="my-video-container">
-        <em id="hide-show" class="fas fa-chevron-right"></em>
+        <em id="hide-show" class="hide-show fas fa-chevron-right"></em>
         <video autoplay id = "my-video" class="my-video">
             <!-- Own Video Stream -->
         </video>
     </div>
 </div>
 
-<div id="info">
+<div id="info" class="info">
     <ul id = "info-list">
         <li class="info-list-elements">Room Name: <%= roomDet.room.name %></li>
         <li class="info-list-elements">Room ID: <%= roomDet.room.id %></li>
         <li class="info-list-elements">Room Password: <%= roomDet.room.password %></li>
         <li class="info-list-elements">Host Name: <%= roomDet.host.name %></li>
     </ul>
-    <div id = "arrow"></div>
+    <div id = "arrow" class="arrow"></div>
 </div>
