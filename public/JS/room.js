@@ -83,6 +83,9 @@ socket.on('join-room', async (roomDet) => {
         console.log('offer sent');
         console.log(payload.sdp);
         
+        console.log('offer sent:');
+        console.log(payload.sdp);
+
         socket.emit('offer', payload);
     }
 
@@ -95,10 +98,14 @@ socket.on('join-room', async (roomDet) => {
     
         
         if (e.candidate && can_call_addIceCandidate === 1){
+            console.log('added new candidate in self');
+            console.log(e.candidate);
             peer.addIceCandidate(new RTCIceCandidate(e.candidate));
         }
     
         if (e.candidate){
+            console.log('new candidate sent: ');
+            console.log(payload.candidate);
             socket.emit('candidate', payload);
         }
     
@@ -112,6 +119,10 @@ socket.on('offer', async (offer) => {
 
     offer = new RTCSessionDescription(offer);
     
+
+    console.log('offer received');
+    console.log(offer);
+
     await peer.setRemoteDescription(offer);
     const answer = await peer.createAnswer();
 
@@ -122,12 +133,18 @@ socket.on('offer', async (offer) => {
         roomId: ROOM_ID
     }
 
+    console.log('answer sent');
+    console.log(payload.sdp);
+
     socket.emit('answer', payload);
 });
 
 
 socket.on('answer', (answer) => {
     answer = new RTCSessionDescription(answer);
+
+    console.log('answer received');
+    console.log(answer);
 
     peer.setRemoteDescription(answer).catch(e => console.log(e));
 
@@ -139,6 +156,10 @@ socket.on('answer', (answer) => {
 socket.on('candidate', (candidate) => {
 
         candidate = new RTCIceCandidate(candidate);
+        
+        console.log('received candidate');
+        console.log(candidate);
+
         peer.addIceCandidate(candidate);
 
 })
