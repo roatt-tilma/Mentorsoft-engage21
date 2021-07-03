@@ -201,7 +201,8 @@ document.onclick = (e) =>{
 
 
 end_call_btn.onclick = () => {
-    peer.close();
+    peerHost.close();
+    peerGuest.close();
     socket.emit('end-call', {
         roomId: ROOM_ID
     });
@@ -209,7 +210,8 @@ end_call_btn.onclick = () => {
 }
 
 socket.on('end-call', async () => {
-    peer.close();
+    peerHost.close();
+    peerGuest.close();
     alert('Other user has ended the call. Redirecting to homepage...');
     await new Promise(r => setTimeout(r, 3000));
     window.location.href = '/';
