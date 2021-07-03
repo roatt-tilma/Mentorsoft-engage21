@@ -7,8 +7,7 @@ window.onload = () => {
 var stream;
 var dataChannel;
 
-const peerHost = createPeer();
-const peerGuest = createPeer();
+const peer = createPeer();
 
 const myVideo = document.getElementById('my-video');
 const otherVideo = document.getElementById('other-video');
@@ -45,7 +44,7 @@ async function init() {
     if(GUEST_NAME){
         guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
         info_list.appendChild(guestName);
-        stream.getTracks().forEach(track => peerGuest.addTrack(track, stream));
+        stream.getTracks().forEach(track => peer.addTrack(track, stream));
         screen_share_btn.style.display = 'none';
     }
 
@@ -72,11 +71,28 @@ socket.on('join-room', async (roomDet) => {
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
 
-    dataChannel = peerHost.createDataChannel('data_channel_webRTC');
+    dataChannel = peer.createDataChannel('data_channel_webRTC');
     dataChannel.onopen = () => console.log('connection open in Host Side');
     dataChannel.onmessage = (e) => console.log('Message received in Host Side: ' + e.data);
     
-    stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
+
+    peer.onnegotiationneeded = async () => {
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        
+        const payload = {
+            sdp: peer.localDescription,
+            roomId: ROOM_ID
+        }
+        
+        // console.log('offer sent from host:');
+        // console.log(payload.sdp);
+    
+        socket.emit('offer', payload);
+    }
+
+
+    stream.getTracks().forEach(track => peer.addTrack(track, stream));
     
 });
 
@@ -88,13 +104,13 @@ socket.on('offer', async (offer) => {
     // console.log('offer received');
     // console.log(offer);
 
-    await peerGuest.setRemoteDescription(offer);
-    const answer = await peerGuest.createAnswer();
+    await peer.setRemoteDescription(offer);
+    const answer = await peer.createAnswer();
 
-    await peerGuest.setLocalDescription(answer);
+    await peer.setLocalDescription(answer);
 
     const payload = {
-        sdp: peerGuest.localDescription,
+        sdp: peer.localDescription,
         roomId: ROOM_ID
     }
 
@@ -111,7 +127,7 @@ socket.on('answer', (answer) => {
     // console.log('answer received');
     // console.log(answer);
 
-    peerHost.setRemoteDescription(answer).catch(e => console.log(e));
+    peer.setRemoteDescription(answer).catch(e => console.log(e));
 
     can_call_addIceCandidate = 1;
 
@@ -125,7 +141,7 @@ socket.on('candidate', (candidate) => {
         // console.log('received candidate');
         // console.log(candidate);
 
-        peerGuest.addIceCandidate(candidate);
+        peer.addIceCandidate(candidate);
 
 })
 
@@ -201,8 +217,8 @@ document.onclick = (e) =>{
 
 
 end_call_btn.onclick = () => {
-    peerHost.close();
-    peerGuest.close();
+    peer.close();
+    peer.close();
     socket.emit('end-call', {
         roomId: ROOM_ID
     });
@@ -210,8 +226,8 @@ end_call_btn.onclick = () => {
 }
 
 socket.on('end-call', async () => {
-    peerHost.close();
-    peerGuest.close();
+    peer.close();
+    peer.close();
     alert('Other user has ended the call. Redirecting to homepage...');
     await new Promise(r => setTimeout(r, 3000));
     window.location.href = '/';
@@ -234,7 +250,7 @@ screen_share_btn.onclick = async () => {
             }
         });
 
-        screen.getTracks().forEach(track => peerHost.addTrack(track, screen));
+        screen.getTracks().forEach(track => peer.addTrack(track, screen));
 }
 
 
@@ -322,7 +338,7 @@ function createPeer(){
     // });
 }
 
-const handleOnConnectionStateChange = (e, peer) => {
+const handleOnConnectionStateChange = (e) => {
     switch (peer.connectionState){
         case 'connected':
             console.log('connection state: connected');
@@ -346,8 +362,7 @@ const handleOnConnectionStateChange = (e, peer) => {
 }
 
 
-peerHost.onconnectionstatechange = (e) => handleOnConnectionStateChange(e, peerHost);
-peerGuest.onconnectionstatechange = (e) => handleOnConnectionStateChange(e, peerGuest);
+peer.onconnectionstatechange = (e) => handleOnConnectionStateChange(e);
 
 
 var receivedStream;
@@ -371,8 +386,7 @@ const handleOnTrackEvent = async (e) => {
     }
 }
 
-peerHost.ontrack = handleOnTrackEvent;
-peerGuest.ontrack = handleOnTrackEvent;
+peer.ontrack = handleOnTrackEvent;
 
 function parseCandidate(line) {
     var parts;
@@ -415,7 +429,7 @@ function parseCandidate(line) {
 
 
 var candidates = {};
-peerHost.onicecandidate = (e) => {
+peer.onicecandidate = (e) => {
 
 
     if (e.candidate && e.candidate.candidate.indexOf('srflx') !== -1) {
@@ -439,7 +453,7 @@ peerHost.onicecandidate = (e) => {
     if (e.candidate && can_call_addIceCandidate === 1){
         // console.log('added new candidate in self');
         // console.log(e.candidate);
-        peerHost.addIceCandidate(new RTCIceCandidate(e.candidate));
+        peer.addIceCandidate(new RTCIceCandidate(e.candidate));
     }
 
     if (e.candidate){
@@ -450,30 +464,17 @@ peerHost.onicecandidate = (e) => {
 
 }
 
-peerHost.onnegotiationneeded = async () => {
-    const offer = await peerHost.createOffer();
-    await peerHost.setLocalDescription(offer);
-    
-    const payload = {
-        sdp: peerHost.localDescription,
-        roomId: ROOM_ID
-    }
-    
-    // console.log('offer sent from host:');
-    // console.log(payload.sdp);
 
-    socket.emit('offer', payload);
+
+
+peer.ondatachannel = e => {
+    peer.dc = e.channel;
+    peer.dc.onopen = () => console.log('connection open in Guest Side');
+    peer.dc.onmessage = (e) =>  console.log('Message received in Guest Side: ' + e.data);
 }
 
 
-peerGuest.ondatachannel = e => {
-    peerGuest.dc = e.channel;
-    peerGuest.dc.onopen = () => console.log('connection open in Guest Side');
-    peerGuest.dc.onmessage = (e) =>  console.log('Message received in Guest Side: ' + e.data);
-}
-
-
-const handleIceGatheringStateChange = (e, peer) => {
+const handleIceGatheringStateChange = (e) => {
     switch(peer.iceGatheringState) {
         case 'new':
           console.log('iceGatheringState: new');
@@ -487,5 +488,4 @@ const handleIceGatheringStateChange = (e, peer) => {
     }
 }
 
-peerHost.addEventListener('icegatheringstatechange', (e) => handleIceGatheringStateChange(e, peerHost));
-peerGuest.addEventListener('icegatheringstatechange', (e) => handleIceGatheringStateChange(e, peerGuest));
+peer.addEventListener('icegatheringstatechange', (e) => handleIceGatheringStateChange(e));
