@@ -44,6 +44,7 @@ async function init() {
         guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
         info_list.appendChild(guestName);
         stream.getTracks().forEach(track => peer.addTrack(track, stream));
+        screen_share_btn.style.display = 'none';
     }
 
 
@@ -69,8 +70,7 @@ socket.on('join-room', async (roomDet) => {
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
 
-    stream.getTracks().forEach(track => peer.addTrack(track, stream));
-    
+
     peer.onnegotiationneeded = async () => {
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
@@ -85,15 +85,17 @@ socket.on('join-room', async (roomDet) => {
         
         socket.emit('offer', payload);
     }
+    
+
+
+    stream.getTracks().forEach(track => peer.addTrack(track, stream));
+    
 
 });
 
 socket.on('offer', async (offer) => {
 
     offer = new RTCSessionDescription(offer);
-    
-    console.log('Received offer:');
-    console.log(offer);
     
     await peer.setRemoteDescription(offer);
     const answer = await peer.createAnswer();
@@ -105,18 +107,12 @@ socket.on('offer', async (offer) => {
         roomId: ROOM_ID
     }
 
-    console.log('answer sent');
-    console.log(payload.sdp);
-
     socket.emit('answer', payload);
 });
 
 
 socket.on('answer', (answer) => {
     answer = new RTCSessionDescription(answer);
-
-    console.log('received answer');
-    console.log(answer);
 
     peer.setRemoteDescription(answer).catch(e => console.log(e));
 
@@ -128,8 +124,6 @@ socket.on('answer', (answer) => {
 socket.on('candidate', (candidate) => {
 
         candidate = new RTCIceCandidate(candidate);
-        console.log('candidate received');
-        console.log(candidate);
         peer.addIceCandidate(candidate);
 
 })
@@ -215,7 +209,7 @@ end_call_btn.onclick = () => {
 
 socket.on('end-call', async () => {
     peer.close();
-    alert('Guest has ended the call. Redirecting to homepage...');
+    alert('Other user has ended the call. Redirecting to homepage...');
     await new Promise(r => setTimeout(r, 3000));
     window.location.href = '/';
 });
@@ -225,14 +219,24 @@ var share_bool = false;
 
 screen_share_btn.onclick = async () => {
         share_bool = !share_bool;
-        const screen = await navigator.mediaDevices.getDisplayMedia();
-        screen.getTracks().forEach(track => peerHostSend.addTrack(track, screen));
+
+        const screen = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+                cursor: 'always'
+            },
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
+        });
+
+        screen.getTracks().forEach(track => peer.addTrack(track, screen));
 }
 
 
 
 hide_show.onclick = () => {
-    console.log('hide');
     myVideo.classList.toggle('hide');
     hide_show.classList.toggle('fa-chevron-right');
     hide_show.classList.toggle('fa-chevron-left');
@@ -258,13 +262,7 @@ function createPeer(){
 }
 
 
-
-peer.ontrack = (e) => {
-    otherVideo.srcObject = e.streams[0];
-}
-
-
-const handleOnIceCandidateEvent = (e) => {
+peer.onicecandidate = (e) => {
 
     const payload = {
         candidate: e.candidate,
@@ -273,16 +271,54 @@ const handleOnIceCandidateEvent = (e) => {
 
     
     if (e.candidate && can_call_addIceCandidate === 1){
-        console.log('candidate added by the sender');
-        console.log(payload.candidate);
         peer.addIceCandidate(new RTCIceCandidate(e.candidate));
     }
 
     if (e.candidate){
-        console.log('candidate sent');
-        console.log(payload.candidate);
         socket.emit('candidate', payload);
+    }
+
+}
+
+peer.onconnectionstatechange = (e) => {
+    switch (peer.connectionState){
+        case 'connected':
+            can_call_addIceCandidate = 0;
+            console.log('connection state connected');
+            break;
+        case 'disconnected':
+            console.log('conneciton state disconnected');
+            break;
+        case 'closed':
+            console.log('connection state closed');
+            break;
+        case 'connecting':
+            console.log('connection state connecting');
+            break;
+        case 'failed':
+            console.log('connection state failed');
+            break;
+        case 'new':
+            console.log('connection state new');
+            break;
     }
 }
 
-peer.onicecandidate = handleOnIceCandidateEvent;
+var receivedStream;
+var count = 0;
+peer.ontrack = async (e) => {
+    count++;
+    console.log('New Track:');
+    console.log(e.streams[0]);
+
+    if (count === 2){
+        receivedStream = e.streams[0]
+    }
+
+    otherVideo.srcObject = e.streams[0];
+
+    if (count === 3){
+        await new Promise(r => setTimeout(r, 8000));
+        otherVideo.srcObject = receivedStream;
+    }
+}

@@ -107,6 +107,7 @@ io.on('connection', socket => {
     });
     
     socket.on('end-call', (data) => {
+        roomDetails.delete(data.roomId);
         socket.broadcast.to(data.roomId).emit('end-call');
     });
 });
