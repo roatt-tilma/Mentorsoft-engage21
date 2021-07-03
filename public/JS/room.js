@@ -292,6 +292,11 @@ function createPeer(){
             },
             { 
                 urls: "stun:stun.l.google.com:19302" 
+            },
+            {
+                url: "turn:numb.viagenie.ca",
+                credential: "I1server",
+                username: "roarout20@gmail.com",
             }
         ]
     });
