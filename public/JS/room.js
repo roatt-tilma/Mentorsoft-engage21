@@ -272,6 +272,11 @@ function createPeer(){
 
     return new RTCPeerConnection({
         iceServers: [
+            {
+                url: "turn:numb.viagenie.ca",
+                credential: "I1server",
+                username: "roarout20@gmail.com",
+            },
             {urls:'stun:stun01.sipphone.com'},
             {urls:'stun:stun.ekiga.net'},
             {urls:'stun:stun.fwdnet.net'},
