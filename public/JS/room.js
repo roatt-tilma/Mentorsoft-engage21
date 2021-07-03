@@ -8,7 +8,7 @@ var stream;
 var dataChannel;
 
 const peerHost = createPeer();
-const peerGuest = createPeer();
+const peerGuest = new RTCPeerConnection();
 
 const myVideo = document.getElementById('my-video');
 const otherVideo = document.getElementById('other-video');
@@ -65,14 +65,14 @@ async function init() {
 //make connection between the guest and the host
 
 socket.on('join-room', async (roomDet) => {
-    console.log('not broadcasted');
+
     GUEST_ID = roomDet.guest.id;
     GUEST_NAME = roomDet.guest.name;
 
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
 
-    dataChannel = peerHost.createDataChannel('connection_from_host');
+    dataChannel = peerHost.createDataChannel('data_channel_webRTC');
     dataChannel.onopen = () => console.log('connection open');
     dataChannel.onmessage = (e) => console.log("Message received in host side", e.data);
     
@@ -85,8 +85,8 @@ socket.on('offer', async (offer) => {
     offer = new RTCSessionDescription(offer);
     
 
-    console.log('offer received');
-    console.log(offer);
+    // console.log('offer received');
+    // console.log(offer);
 
     await peerGuest.setRemoteDescription(offer);
     const answer = await peerGuest.createAnswer();
@@ -356,8 +356,8 @@ var count = 0;
 
 const handleOnTrackEvent = async (e) => {
     count++;
-    console.log('New Track:');
-    console.log(e.streams[0]);
+    // console.log('New Track:');
+    // console.log(e.streams[0]);
 
     if (count === 2){
         receivedStream = e.streams[0]
@@ -384,14 +384,14 @@ peerHost.onicecandidate = (e) => {
 
     
     if (e.candidate && can_call_addIceCandidate === 1){
-        console.log('added new candidate in self');
-        console.log(e.candidate);
+        // console.log('added new candidate in self');
+        // console.log(e.candidate);
         peerHost.addIceCandidate(new RTCIceCandidate(e.candidate));
     }
 
     if (e.candidate){
-        console.log('new candidate sent: ');
-        console.log(payload.candidate);
+        // console.log('new candidate sent: ');
+        // console.log(payload.candidate);
         socket.emit('candidate', payload);
     }
 
@@ -406,8 +406,8 @@ peerHost.onnegotiationneeded = async () => {
         roomId: ROOM_ID
     }
     
-    console.log('offer sent from host:');
-    console.log(payload.sdp);
+    // console.log('offer sent from host:');
+    // console.log(payload.sdp);
 
     socket.emit('offer', payload);
 }
@@ -415,6 +415,27 @@ peerHost.onnegotiationneeded = async () => {
 
 peerGuest.ondatachannel = e => {
     peerGuest.dc = e.channel;
-    peerGuest.dc.onopen = () => console.log("connection open from guest side");
-    peerGuest.dc.onmessage = (ev) =>  console.log("received message from host",ev.data);
+    peerGuest.dc.onopen = () => console.log("connection open in Guest Side");
+    peerGuest.dc.onmessage = (ev) =>  console.log("received message from Host",ev.data);
 }
+
+
+
+
+
+const handleIceGatheringStateChange = (e, peer) => {
+    switch(peer.iceGatheringState) {
+        case "new":
+          console.log('iceGatheringState: new');
+          break;
+        case "gathering":
+          console.log('iceGatheringState: gathering');
+          break;
+        case "complete":
+          console.log('iceGatheringState: complete');
+          break;
+    }
+}
+
+peerHost.iceGatheringStateChange = (e) => handleIceGatheringStateChange(e, peerHost);
+peerGuest.iceGatheringStateChange = (e) => handleIceGatheringStateChange(e, peerGuest);
