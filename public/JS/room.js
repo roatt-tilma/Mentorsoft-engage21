@@ -282,12 +282,7 @@ function createPeer(){
     return new RTCPeerConnection({
         iceServers: [
             {urls: 'stun:stun1.l.google.com:19302'},
-            {urls: 'stun:stun2.l.google.com:19302'},
-            {
-                urls: 'turn:numb.viagenie.ca',
-                credential: 'I1server',
-                username: 'roarout20@gmail.com'
-            }
+            {urls: 'stun:stun2.l.google.com:19302'}
         ]
     });
 
