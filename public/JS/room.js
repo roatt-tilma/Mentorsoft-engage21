@@ -5,6 +5,7 @@ window.onload = () => {
 }
 
 var stream;
+var dataChannel;
 
 const peer = createPeer();
 
@@ -69,8 +70,7 @@ socket.on('join-room', async (roomDet) => {
 
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
-
-
+    
     peer.onnegotiationneeded = async () => {
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
@@ -262,17 +262,17 @@ function createPeer(){
     return new RTCPeerConnection({
         iceServers: [
             {
+                url: "turn:numb.viagenie.ca",
+                credential: "I1server",
+                username: "roarout20@gmail.com",
+            },
+            {
                 urls: "turn:numb.viagenie.ca",
                 credential: "Roatt@tilma12",
                 username: "roshanbhattmnr@gmail.com"
             },
             { 
                 urls: "stun:stun.l.google.com:19302" 
-            },
-            {
-                url: "turn:numb.viagenie.ca",
-                credential: "I1server",
-                username: "roarout20@gmail.com",
             }
         ]
     });
@@ -324,7 +324,7 @@ peer.ontrack = async (e) => {
 
     otherVideo.srcObject = e.streams[0];
 
-    if (count === 3){
+    if (count >= 3){
         await new Promise(r => setTimeout(r, 8000));
         otherVideo.srcObject = receivedStream;
     }
