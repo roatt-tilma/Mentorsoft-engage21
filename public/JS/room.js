@@ -73,8 +73,8 @@ socket.on('join-room', async (roomDet) => {
     info_list.appendChild(guestName);
 
     dataChannel = peerHost.createDataChannel('data_channel_webRTC');
-    dataChannel.onopen = () => console.log('connection open');
-    dataChannel.onmessage = (e) => console.log("Message received in host side", e.data);
+    dataChannel.onopen = () => console.log('connection open in Host Side');
+    dataChannel.onmessage = (e) => console.log("Message received in Host Side: ", e.data);
     
     stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
     
@@ -318,29 +318,22 @@ function createPeer(){
 const handleOnConnectionStateChange = (e, peer) => {
     switch (peer.connectionState){
         case 'connected':
-            can_call_addIceCandidate = 0;
-            console.log('connection state connected');
-            console.log(e);
+            console.log('connection state: connected');
             break;
         case 'disconnected':
-            console.log('conneciton state disconnected');
-            console.log(e);
+            console.log('conneciton state: disconnected');
             break;
         case 'closed':
-            console.log('connection state closed');
-            console.log(e);
+            console.log('connection state: closed');
             break;
         case 'connecting':
-            console.log('connection state connecting');
-            console.log(e);
+            console.log('connection state: connecting');
             break;
         case 'failed':
-            console.log('connection state failed');
-            console.log(e);
+            console.log('connection state: failed');
             break;
         case 'new':
-            console.log('connection state new');
-            console.log(e);
+            console.log('connection state: new');
             break;
     }
 }
@@ -416,7 +409,7 @@ peerHost.onnegotiationneeded = async () => {
 peerGuest.ondatachannel = e => {
     peerGuest.dc = e.channel;
     peerGuest.dc.onopen = () => console.log("connection open in Guest Side");
-    peerGuest.dc.onmessage = (ev) =>  console.log("received message from Host",ev.data);
+    peerGuest.dc.onmessage = (e) =>  console.log("Message received in Guest Side", e.data);
 }
 
 
@@ -434,5 +427,5 @@ const handleIceGatheringStateChange = (e, peer) => {
     }
 }
 
-peerHost.iceGatheringStateChange = (e) => handleIceGatheringStateChange(e, peerHost);
-peerGuest.iceGatheringStateChange = (e) => handleIceGatheringStateChange(e, peerGuest);
+peerHost.addEventListener('icegatheringstatechange', (e) => handleIceGatheringStateChange(e, peerHost));
+peerGuest.addEventListener('icegatheringstatechange', (e) => handleIceGatheringStateChange(e, peerGuest));
