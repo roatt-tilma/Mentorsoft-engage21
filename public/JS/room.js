@@ -8,7 +8,7 @@ var stream;
 var dataChannel;
 
 const peerHost = createPeer();
-const peerGuest = new RTCPeerConnection();
+const peerGuest = createPeer();
 
 const myVideo = document.getElementById('my-video');
 const otherVideo = document.getElementById('other-video');
