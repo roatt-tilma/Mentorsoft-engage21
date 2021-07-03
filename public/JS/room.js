@@ -7,7 +7,8 @@ window.onload = () => {
 var stream;
 var dataChannel;
 
-const peer = createPeer();
+const peerHost = createPeer();
+const peerGuest = createPeer();
 
 const myVideo = document.getElementById('my-video');
 const otherVideo = document.getElementById('other-video');
@@ -44,7 +45,7 @@ async function init() {
     if(GUEST_NAME){
         guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
         info_list.appendChild(guestName);
-        stream.getTracks().forEach(track => peer.addTrack(track, stream));
+        stream.getTracks().forEach(track => peerGuest.addTrack(track, stream));
         screen_share_btn.style.display = 'none';
     }
 
@@ -64,30 +65,18 @@ async function init() {
 //make connection between the guest and the host
 
 socket.on('join-room', async (roomDet) => {
-    
+    console.log('not broadcasted');
     GUEST_ID = roomDet.guest.id;
     GUEST_NAME = roomDet.guest.name;
 
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
-    
-    peer.onnegotiationneeded = async () => {
-        const offer = await peer.createOffer();
-        await peer.setLocalDescription(offer);
-        
-        const payload = {
-            sdp: peer.localDescription,
-            roomId: ROOM_ID
-        }
-        
-        console.log('offer sent:');
-        console.log(payload.sdp);
 
-        socket.emit('offer', payload);
-    }
-
+    dataChannel = peerHost.createDataChannel('connection_from_host');
+    dataChannel.onopen = () => console.log('connection open');
+    dataChannel.onmessage = (e) => console.log("Message received in host side", e.data);
     
-    stream.getTracks().forEach(track => peer.addTrack(track, stream));
+    stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
     
 });
 
@@ -99,13 +88,13 @@ socket.on('offer', async (offer) => {
     console.log('offer received');
     console.log(offer);
 
-    await peer.setRemoteDescription(offer);
-    const answer = await peer.createAnswer();
+    await peerGuest.setRemoteDescription(offer);
+    const answer = await peerGuest.createAnswer();
 
-    await peer.setLocalDescription(answer);
+    await peerGuest.setLocalDescription(answer);
 
     const payload = {
-        sdp: peer.localDescription,
+        sdp: peerGuest.localDescription,
         roomId: ROOM_ID
     }
 
@@ -122,7 +111,7 @@ socket.on('answer', (answer) => {
     console.log('answer received');
     console.log(answer);
 
-    peer.setRemoteDescription(answer).catch(e => console.log(e));
+    peerHost.setRemoteDescription(answer).catch(e => console.log(e));
 
     can_call_addIceCandidate = 1;
 
@@ -136,7 +125,7 @@ socket.on('candidate', (candidate) => {
         console.log('received candidate');
         console.log(candidate);
 
-        peer.addIceCandidate(candidate);
+        peerGuest.addIceCandidate(candidate);
 
 })
 
@@ -243,7 +232,7 @@ screen_share_btn.onclick = async () => {
             }
         });
 
-        screen.getTracks().forEach(track => peer.addTrack(track, screen));
+        screen.getTracks().forEach(track => peerHost.addTrack(track, screen));
 }
 
 
@@ -259,27 +248,28 @@ hide_show.onclick = () => {
 
 
 function createPeer(){
-    return new RTCPeerConnection({
-        iceServers: [
-            {
-                url: "turn:numb.viagenie.ca",
-                credential: "I1server",
-                username: "roarout20@gmail.com",
-            },
-            {
-                urls: "turn:numb.viagenie.ca",
-                credential: "Roatt@tilma12",
-                username: "roshanbhattmnr@gmail.com"
-            },
-            { 
-                urls: "stun:stun.l.google.com:19302" 
-            }
-        ]
-    });
+    // return new RTCPeerConnection({
+    //     iceServers: [
+    //         {
+    //             url: "turn:numb.viagenie.ca",
+    //             credential: "I1server",
+    //             username: "roarout20@gmail.com",
+    //         },
+    //         {
+    //             urls: "turn:numb.viagenie.ca",
+    //             credential: "Roatt@tilma12",
+    //             username: "roshanbhattmnr@gmail.com"
+    //         },
+    //         { 
+    //             urls: "stun:stun.l.google.com:19302" 
+    //         }
+    //     ]
+    // });
+
+    return new RTCPeerConnection();
 }
 
-
-peer.onconnectionstatechange = (e) => {
+const handleOnConnectionStateChange = (e, peer) => {
     switch (peer.connectionState){
         case 'connected':
             can_call_addIceCandidate = 0;
@@ -310,10 +300,15 @@ peer.onconnectionstatechange = (e) => {
 }
 
 
+peerHost.onconnectionstatechange = (e) => handleOnConnectionStateChange(e, peerHost);
+peerGuest.onconnectionstatechange = (e) => handleOnConnectionStateChange(e, peerGuest);
+
 
 var receivedStream;
 var count = 0;
-peer.ontrack = async (e) => {
+
+
+const handleOnTrackEvent = async (e) => {
     count++;
     console.log('New Track:');
     console.log(e.streams[0]);
@@ -330,8 +325,11 @@ peer.ontrack = async (e) => {
     }
 }
 
+peerHost.ontrack = handleOnTrackEvent;
+peerGuest.ontrack = handleOnTrackEvent;
 
-peer.onicecandidate = (e) => {
+
+peerHost.onicecandidate = (e) => {
 
     const payload = {
         candidate: e.candidate,
@@ -342,7 +340,7 @@ peer.onicecandidate = (e) => {
     if (e.candidate && can_call_addIceCandidate === 1){
         console.log('added new candidate in self');
         console.log(e.candidate);
-        peer.addIceCandidate(new RTCIceCandidate(e.candidate));
+        peerHost.addIceCandidate(new RTCIceCandidate(e.candidate));
     }
 
     if (e.candidate){
@@ -351,4 +349,26 @@ peer.onicecandidate = (e) => {
         socket.emit('candidate', payload);
     }
 
+}
+
+peerHost.onnegotiationneeded = async () => {
+    const offer = await peerHost.createOffer();
+    await peerHost.setLocalDescription(offer);
+    
+    const payload = {
+        sdp: peerHost.localDescription,
+        roomId: ROOM_ID
+    }
+    
+    console.log('offer sent from host:');
+    console.log(payload.sdp);
+
+    socket.emit('offer', payload);
+}
+
+
+peerGuest.ondatachannel = e => {
+    peerGuest.dc = e.channel;
+    peerGuest.dc.onopen = () => console.log("connection open from guest side");
+    peerGuest.dc.onmessage = (ev) =>  console.log("received message from host",ev.data);
 }
