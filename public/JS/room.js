@@ -80,36 +80,12 @@ socket.on('join-room', async (roomDet) => {
             roomId: ROOM_ID
         }
         
-        console.log('offer sent');
-        console.log(payload.sdp);
-        
         console.log('offer sent:');
         console.log(payload.sdp);
 
         socket.emit('offer', payload);
     }
 
-    peer.onicecandidate = (e) => {
-
-        const payload = {
-            candidate: e.candidate,
-            roomId: ROOM_ID
-        }
-    
-        
-        if (e.candidate && can_call_addIceCandidate === 1){
-            console.log('added new candidate in self');
-            console.log(e.candidate);
-            peer.addIceCandidate(new RTCIceCandidate(e.candidate));
-        }
-    
-        if (e.candidate){
-            console.log('new candidate sent: ');
-            console.log(payload.candidate);
-            socket.emit('candidate', payload);
-        }
-    
-    }
     
     stream.getTracks().forEach(track => peer.addTrack(track, stream));
     
@@ -352,4 +328,27 @@ peer.ontrack = async (e) => {
         await new Promise(r => setTimeout(r, 8000));
         otherVideo.srcObject = receivedStream;
     }
+}
+
+
+peer.onicecandidate = (e) => {
+
+    const payload = {
+        candidate: e.candidate,
+        roomId: ROOM_ID
+    }
+
+    
+    if (e.candidate && can_call_addIceCandidate === 1){
+        console.log('added new candidate in self');
+        console.log(e.candidate);
+        peer.addIceCandidate(new RTCIceCandidate(e.candidate));
+    }
+
+    if (e.candidate){
+        console.log('new candidate sent: ');
+        console.log(payload.candidate);
+        socket.emit('candidate', payload);
+    }
+
 }
