@@ -98,8 +98,8 @@ socket.on('offer', async (offer) => {
         roomId: ROOM_ID
     }
 
-    console.log('answer sent');
-    console.log(payload.sdp);
+    // console.log('answer sent');
+    // console.log(payload.sdp);
 
     socket.emit('answer', payload);
 });
@@ -108,8 +108,8 @@ socket.on('offer', async (offer) => {
 socket.on('answer', (answer) => {
     answer = new RTCSessionDescription(answer);
 
-    console.log('answer received');
-    console.log(answer);
+    // console.log('answer received');
+    // console.log(answer);
 
     peerHost.setRemoteDescription(answer).catch(e => console.log(e));
 
@@ -122,8 +122,8 @@ socket.on('candidate', (candidate) => {
 
         candidate = new RTCIceCandidate(candidate);
         
-        console.log('received candidate');
-        console.log(candidate);
+        // console.log('received candidate');
+        // console.log(candidate);
 
         peerGuest.addIceCandidate(candidate);
 
@@ -418,9 +418,6 @@ peerGuest.ondatachannel = e => {
     peerGuest.dc.onopen = () => console.log("connection open in Guest Side");
     peerGuest.dc.onmessage = (ev) =>  console.log("received message from Host",ev.data);
 }
-
-
-
 
 
 const handleIceGatheringStateChange = (e, peer) => {
