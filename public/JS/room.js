@@ -13,14 +13,14 @@ const peerGuest = new RTCPeerConnection();
 const myVideo = document.getElementById('my-video');
 const otherVideo = document.getElementById('other-video');
 
-const video_btn = document.getElementById("video-btn");
-const video_icon = document.getElementById("video-icon");
+const video_btn = document.getElementById('video-btn');
+const video_icon = document.getElementById('video-icon');
 
-const audio_btn = document.getElementById("audio-btn");
-const audio_icon = document.getElementById("audio-icon");
+const audio_btn = document.getElementById('audio-btn');
+const audio_icon = document.getElementById('audio-icon');
 
-const screen_share_btn = document.getElementById("screen-share-btn");
-const screen_share_icon = document.getElementById("screen-share-icon");
+const screen_share_btn = document.getElementById('screen-share-btn');
+const screen_share_icon = document.getElementById('screen-share-icon');
 
 const end_call_btn = document.getElementById('end-call-btn');
 
@@ -74,7 +74,7 @@ socket.on('join-room', async (roomDet) => {
 
     dataChannel = peerHost.createDataChannel('data_channel_webRTC');
     dataChannel.onopen = () => console.log('connection open in Host Side');
-    dataChannel.onmessage = (e) => console.log("Message received in Host Side: ", e.data);
+    dataChannel.onmessage = (e) => console.log('Message received in Host Side: ' + e.data);
     
     stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
     
@@ -253,17 +253,17 @@ function createPeer(){
     // return new RTCPeerConnection({
     //     iceServers: [
     //         {
-    //             url: "turn:numb.viagenie.ca",
-    //             credential: "I1server",
-    //             username: "roarout20@gmail.com",
+    //             url: 'turn:numb.viagenie.ca',
+    //             credential: 'I1server',
+    //             username: 'roarout20@gmail.com',
     //         },
     //         {
-    //             urls: "turn:numb.viagenie.ca",
-    //             credential: "Roatt@tilma12",
-    //             username: "roshanbhattmnr@gmail.com"
+    //             urls: 'turn:numb.viagenie.ca',
+    //             credential: 'Roatt@tilma12',
+    //             username: 'roshanbhattmnr@gmail.com'
     //         },
     //         { 
-    //             urls: "stun:stun.l.google.com:19302" 
+    //             urls: 'stun:stun.l.google.com:19302' 
     //         }
     //     ]
     // });
@@ -273,9 +273,9 @@ function createPeer(){
     return new RTCPeerConnection({
         iceServers: [
             {
-                url: "turn:numb.viagenie.ca",
-                credential: "I1server",
-                username: "roarout20@gmail.com",
+                url: 'turn:numb.viagenie.ca',
+                credential: 'I1server',
+                username: 'roarout20@gmail.com',
             },
             {urls:'stun:stun01.sipphone.com'},
             {urls:'stun:stun.ekiga.net'},
@@ -408,20 +408,20 @@ peerHost.onnegotiationneeded = async () => {
 
 peerGuest.ondatachannel = e => {
     peerGuest.dc = e.channel;
-    peerGuest.dc.onopen = () => console.log("connection open in Guest Side");
-    peerGuest.dc.onmessage = (e) =>  console.log("Message received in Guest Side", e.data);
+    peerGuest.dc.onopen = () => console.log('connection open in Guest Side');
+    peerGuest.dc.onmessage = (e) =>  console.log('Message received in Guest Side: ' + e.data);
 }
 
 
 const handleIceGatheringStateChange = (e, peer) => {
     switch(peer.iceGatheringState) {
-        case "new":
+        case 'new':
           console.log('iceGatheringState: new');
           break;
-        case "gathering":
+        case 'gathering':
           console.log('iceGatheringState: gathering');
           break;
-        case "complete":
+        case 'complete':
           console.log('iceGatheringState: complete');
           break;
     }
