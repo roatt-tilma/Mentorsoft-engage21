@@ -282,21 +282,27 @@ peer.onconnectionstatechange = (e) => {
         case 'connected':
             can_call_addIceCandidate = 0;
             console.log('connection state connected');
+            console.log(e);
             break;
         case 'disconnected':
             console.log('conneciton state disconnected');
+            console.log(e);
             break;
         case 'closed':
             console.log('connection state closed');
+            console.log(e);
             break;
         case 'connecting':
             console.log('connection state connecting');
+            console.log(e);
             break;
         case 'failed':
             console.log('connection state failed');
+            console.log(e);
             break;
         case 'new':
             console.log('connection state new');
+            console.log(e);
             break;
     }
 }
