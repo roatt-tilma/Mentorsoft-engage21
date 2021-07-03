@@ -286,7 +286,7 @@ function createPeer(){
     return new RTCPeerConnection({
         iceServers: [
             {
-                urls: "numb.viagenie.ca",
+                urls: "turn:numb.viagenie.ca",
                 credential: "Roatt@tilma12",
                 username: "roshanbhattmnr@gmail.com"
             },
