@@ -16,8 +16,8 @@ a{
 input:focus{ outline: none; }
 
 body{
-    padding: 2% 4%;
-    margin-bottom: 100px;
+    padding: 2% 4% 0;
+    margin-bottom: 11.5%;
 }
 
 .gridBox{
