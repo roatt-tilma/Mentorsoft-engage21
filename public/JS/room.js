@@ -279,12 +279,12 @@ function createPeer(){
     //     ]
     // });
 
-    return new RTCPeerConnection({
-        iceServers: [
-            {urls: 'stun:stun1.l.google.com:19302'},
-            {urls: 'stun:stun2.l.google.com:19302'}
-        ]
-    });
+    // return new RTCPeerConnection({
+    //     iceServers: [
+    //         {urls: 'stun:stun1.l.google.com:19302'},
+    //         {urls: 'stun:stun2.l.google.com:19302'}
+    //     ]
+    // });
 
     // return new RTCPeerConnection();
 
@@ -331,6 +331,8 @@ function createPeer(){
     //         }
     //     ]
     // });
+
+    return new RTCPeerConnection();
 }
 
 const handleOnConnectionStateChange = (e) => {
