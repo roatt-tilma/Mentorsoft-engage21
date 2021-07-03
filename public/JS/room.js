@@ -85,12 +85,27 @@ socket.on('join-room', async (roomDet) => {
         
         socket.emit('offer', payload);
     }
+
+    peer.onicecandidate = (e) => {
+
+        const payload = {
+            candidate: e.candidate,
+            roomId: ROOM_ID
+        }
     
-
-
+        
+        if (e.candidate && can_call_addIceCandidate === 1){
+            peer.addIceCandidate(new RTCIceCandidate(e.candidate));
+        }
+    
+        if (e.candidate){
+            socket.emit('candidate', payload);
+        }
+    
+    }
+    
     stream.getTracks().forEach(track => peer.addTrack(track, stream));
     
-
 });
 
 socket.on('offer', async (offer) => {
@@ -262,24 +277,6 @@ function createPeer(){
 }
 
 
-peer.onicecandidate = (e) => {
-
-    const payload = {
-        candidate: e.candidate,
-        roomId: ROOM_ID
-    }
-
-    
-    if (e.candidate && can_call_addIceCandidate === 1){
-        peer.addIceCandidate(new RTCIceCandidate(e.candidate));
-    }
-
-    if (e.candidate){
-        socket.emit('candidate', payload);
-    }
-
-}
-
 peer.onconnectionstatechange = (e) => {
     switch (peer.connectionState){
         case 'connected':
@@ -303,6 +300,8 @@ peer.onconnectionstatechange = (e) => {
             break;
     }
 }
+
+
 
 var receivedStream;
 var count = 0;
