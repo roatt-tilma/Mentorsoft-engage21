@@ -3,8 +3,9 @@ footer{
 
     position: absolute;
     width: 100%;
-    left: 0px;
-    bottom: 5px;
+    height: 100px;
+    left: 0;
+    bottom: 0;
     padding: 0 4%;
     box-sizing: border-box;
 

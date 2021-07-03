@@ -3,6 +3,11 @@
     padding: 0px;
 }
 
+html{
+    position: relative;
+    min-height: 100%;
+}
+
 a{
     text-decoration: none;
     color: #4548f4;
@@ -12,6 +17,7 @@ input:focus{ outline: none; }
 
 body{
     padding: 2% 4%;
+    margin-bottom: 100px;
 }
 
 .gridBox{
