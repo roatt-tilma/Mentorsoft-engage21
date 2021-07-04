@@ -55,7 +55,6 @@ async function init() {
         otherUsername.innerText = HOST_NAME;
 
         stream.getTracks().forEach(track => peer.addTrack(track, stream));
-        screen_share_btn.style.display = 'none';
     }
 
 
@@ -82,6 +81,10 @@ socket.on('join-room', async (roomDet) => {
     info_list.appendChild(guestName);
 
     otherUsername.innerText = GUEST_NAME;
+
+    screen_share_btn.disabled = false;
+    screen_share_btn.style.backgroundColor = '#4548f4';
+    screen_share_btn.style.cursor = 'pointer';
 
     dataChannel = peer.createDataChannel('data_channel_webRTC');
     dataChannel.onopen = () => console.log('connection open in Host Side');
@@ -273,12 +276,22 @@ socket.on('end-call', async () => {
     else{
         alert(`${GUEST_NAME} has ended the call. Redirecting to homepage...`);
     }
-    await new Promise(r => setTimeout(r, 3000));
+    await new Promise(r => setTimeout(r, 1000));
     window.location.href = '/';
 });
 
 
 var share_bool = false;
+
+if(USER_TYPE === 'Guest'){
+    screen_share_btn.style.display = 'none';
+}
+
+
+screen_share_btn.disabled = true;
+screen_share_btn.style.backgroundColor = '#777';
+screen_share_btn.style.cursor = 'auto';
+
 
 screen_share_btn.onclick = async () => {
         share_bool = !share_bool;
@@ -299,10 +312,18 @@ screen_share_btn.onclick = async () => {
         screen.getVideoTracks()[0].onended = () => {
             socket.emit('display-stream-ended', {
                 roomId: ROOM_ID
-            })
+            });
+
+            screen_share_btn.disabled = false;
+            screen_share_btn.style.backgroundColor = '#4548f4';
+            screen_share_btn.style.cursor = 'pointer';
         };
  
         screen.getTracks().forEach(track => peer.addTrack(track, screen));
+
+        screen_share_btn.disabled = true;
+        screen_share_btn.style.backgroundColor = '#777';
+        screen_share_btn.style.cursor = 'auto';
 }
 
 
@@ -380,12 +401,12 @@ const handleOnConnectionStateChange = async (e) => {
 
                 peer.close();
                 if (USER_TYPE === 'Guest'){
-                    alert(`${HOST_NAME} has ended the call. Redirecting to homepage...`);
+                    alert(`${HOST_NAME} has been disconnected. Redirecting to homepage...`);
                 }
                 else{
-                    alert(`${GUEST_NAME} has ended the call. Redirecting to homepage...`);
+                    alert(`${GUEST_NAME} has been disconnected. Redirecting to homepage...`);
                 }
-                await new Promise(r => setTimeout(r, 3000));
+                await new Promise(r => setTimeout(r, 1000));
                 window.location.href = '/';
                 
             }

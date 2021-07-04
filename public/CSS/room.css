@@ -53,7 +53,6 @@ body{
     position: relative;
     height: 90%;
     flex: 2 2 auto;
-    background-color: #bcbdff;
 }
 
 .my-video {
@@ -166,12 +165,17 @@ body{
 }
 
 .overlay > div{
-    height: 100px;
-    width: 100px;
+    height: 120px;
+    width: 120px;
     border-radius: 50%;
     background-color: #4548F4;
     display: grid;
     place-items: center;
+
+    font-style: normal;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
     color: #fff;
 }
 
