@@ -12,14 +12,14 @@ const peer = createPeer();
 const myVideo = document.getElementById('my-video');
 const otherVideo = document.getElementById('other-video');
 
-const video_btn = document.getElementById("video-btn");
-const video_icon = document.getElementById("video-icon");
+const video_btn = document.getElementById('video-btn');
+const video_icon = document.getElementById('video-icon');
 
-const audio_btn = document.getElementById("audio-btn");
-const audio_icon = document.getElementById("audio-icon");
+const audio_btn = document.getElementById('audio-btn');
+const audio_icon = document.getElementById('audio-icon');
 
-const screen_share_btn = document.getElementById("screen-share-btn");
-const screen_share_icon = document.getElementById("screen-share-icon");
+const screen_share_btn = document.getElementById('screen-share-btn');
+const screen_share_icon = document.getElementById('screen-share-icon');
 
 const end_call_btn = document.getElementById('end-call-btn');
 
@@ -64,13 +64,18 @@ async function init() {
 //make connection between the guest and the host
 
 socket.on('join-room', async (roomDet) => {
-    
+
     GUEST_ID = roomDet.guest.id;
     GUEST_NAME = roomDet.guest.name;
 
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
+
+    dataChannel = peer.createDataChannel('data_channel_webRTC');
+    dataChannel.onopen = () => console.log('connection open in Host Side');
+    dataChannel.onmessage = (e) => console.log('Message received in Host Side: ' + e.data);
     
+
     peer.onnegotiationneeded = async () => {
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
@@ -80,13 +85,13 @@ socket.on('join-room', async (roomDet) => {
             roomId: ROOM_ID
         }
         
-        console.log('offer sent:');
-        console.log(payload.sdp);
-
+        // console.log('offer sent from host:');
+        // console.log(payload.sdp);
+    
         socket.emit('offer', payload);
     }
 
-    
+
     stream.getTracks().forEach(track => peer.addTrack(track, stream));
     
 });
@@ -96,8 +101,8 @@ socket.on('offer', async (offer) => {
     offer = new RTCSessionDescription(offer);
     
 
-    console.log('offer received');
-    console.log(offer);
+    // console.log('offer received');
+    // console.log(offer);
 
     await peer.setRemoteDescription(offer);
     const answer = await peer.createAnswer();
@@ -109,8 +114,8 @@ socket.on('offer', async (offer) => {
         roomId: ROOM_ID
     }
 
-    console.log('answer sent');
-    console.log(payload.sdp);
+    // console.log('answer sent');
+    // console.log(payload.sdp);
 
     socket.emit('answer', payload);
 });
@@ -119,8 +124,8 @@ socket.on('offer', async (offer) => {
 socket.on('answer', (answer) => {
     answer = new RTCSessionDescription(answer);
 
-    console.log('answer received');
-    console.log(answer);
+    // console.log('answer received');
+    // console.log(answer);
 
     peer.setRemoteDescription(answer).catch(e => console.log(e));
 
@@ -133,8 +138,8 @@ socket.on('candidate', (candidate) => {
 
         candidate = new RTCIceCandidate(candidate);
         
-        console.log('received candidate');
-        console.log(candidate);
+        // console.log('received candidate');
+        // console.log(candidate);
 
         peer.addIceCandidate(candidate);
 
@@ -213,6 +218,7 @@ document.onclick = (e) =>{
 
 end_call_btn.onclick = () => {
     peer.close();
+    peer.close();
     socket.emit('end-call', {
         roomId: ROOM_ID
     });
@@ -220,6 +226,7 @@ end_call_btn.onclick = () => {
 }
 
 socket.on('end-call', async () => {
+    peer.close();
     peer.close();
     alert('Other user has ended the call. Redirecting to homepage...');
     await new Promise(r => setTimeout(r, 3000));
@@ -269,52 +276,72 @@ hide_show.onclick = () => {
 
 
 function createPeer(){
+
     return new RTCPeerConnection({
         iceServers: [
             {
-                url: "turn:numb.viagenie.ca",
-                credential: "I1server",
-                username: "roarout20@gmail.com",
+                url: 'turn:numb.viagenie.ca',
+                credential: 'I1server',
+                username: 'roarout20@gmail.com',
+            },
+            {urls:'stun:stun01.sipphone.com'},
+            {urls:'stun:stun.ekiga.net'},
+            {urls:'stun:stun.fwdnet.net'},
+            {urls:'stun:stun.ideasip.com'},
+            {urls:'stun:stun.iptel.org'},
+            {urls:'stun:stun.rixtelecom.se'},
+            {urls:'stun:stun.schlund.de'},
+            {urls:'stun:stun.l.google.com:19302'},
+            {urls:'stun:stun1.l.google.com:19302'},
+            {urls:'stun:stun2.l.google.com:19302'},
+            {urls:'stun:stun3.l.google.com:19302'},
+            {urls:'stun:stun4.l.google.com:19302'},
+            {urls:'stun:stunserver.org'},
+            {urls:'stun:stun.softjoys.com'},
+            {urls:'stun:stun.voiparound.com'},
+            {urls:'stun:stun.voipbuster.com'},
+            {urls:'stun:stun.voipstunt.com'},
+            {urls:'stun:stun.voxgratia.org'},
+            {urls:'stun:stun.xten.com'},
+            {
+                urls: 'turn:numb.viagenie.ca',
+                credential: 'muazkh',
+                username: 'webrtc@live.com'
             },
             {
-                urls: "turn:numb.viagenie.ca",
-                credential: "Roatt@tilma12",
-                username: "roshanbhattmnr@gmail.com"
+                urls: 'turn:192.158.29.39:3478?transport=udp',
+                credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                username: '28224511:1379330808'
             },
-            { 
-                urls: "stun:stun.l.google.com:19302" 
+            {
+                urls: 'turn:192.158.29.39:3478?transport=tcp',
+                credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                username: '28224511:1379330808'
             }
         ]
     });
+
 }
 
-
-peer.onconnectionstatechange = (e) => {
+const handleOnConnectionStateChange = (e) => {
     switch (peer.connectionState){
         case 'connected':
-            can_call_addIceCandidate = 0;
-            console.log('connection state connected');
-            console.log(e);
+            console.log('connection state: connected');
             break;
         case 'disconnected':
-            console.log('conneciton state disconnected');
-            console.log(e);
+            console.log('conneciton state: disconnected');
             break;
         case 'closed':
-            console.log('connection state closed');
-            console.log(e);
+            console.log('connection state: closed');
             break;
         case 'connecting':
-            console.log('connection state connecting');
-            console.log(e);
+            console.log('connection state: connecting');
             break;
         case 'failed':
-            console.log('connection state failed');
-            console.log(e);
+            console.log('connection state: failed');
             break;
         case 'new':
-            console.log('connection state new');
-            console.log(e);
+            console.log('connection state: new');
             break;
     }
 }
@@ -332,3 +359,107 @@ peer.ontrack = async (e) => {
     otherVideo.srcObject = e.streams[0];
 
 }
+
+peer.ontrack = handleOnTrackEvent;
+
+function parseCandidate(line) {
+    var parts;
+    // Parse both variants.
+    if (line.indexOf('a=candidate:') === 0) {
+      parts = line.substring(12).split(' ');
+    } else {
+      parts = line.substring(10).split(' ');
+    }
+  
+    var candidate = {
+      foundation: parts[0],
+      component: parts[1],
+      protocol: parts[2].toLowerCase(),
+      priority: parseInt(parts[3], 10),
+      ip: parts[4],
+      port: parseInt(parts[5], 10),
+      // skip parts[6] == 'typ'
+      type: parts[7]
+    };
+  
+    for (var i = 8; i < parts.length; i += 2) {
+      switch (parts[i]) {
+        case 'raddr':
+          candidate.relatedAddress = parts[i + 1];
+          break;
+        case 'rport':
+          candidate.relatedPort = parseInt(parts[i + 1], 10);
+          break;
+        case 'tcptype':
+          candidate.tcpType = parts[i + 1];
+          break;
+        default: // Unknown extensions are silently ignored.
+          break;
+      }
+    }
+    return candidate;
+  }
+
+
+
+var candidates = {};
+peer.onicecandidate = (e) => {
+
+
+    if (e.candidate && e.candidate.candidate.indexOf('srflx') !== -1) {
+        var cand = parseCandidate(e.candidate.candidate);
+        if (!candidates[cand.relatedPort]) candidates[cand.relatedPort] = [];
+        candidates[cand.relatedPort].push(cand.port);
+      } else if (!e.candidate) {
+        if (Object.keys(candidates).length === 1) {
+          var ports = candidates[Object.keys(candidates)[0]];
+          console.log(ports.length === 1 ? 'normal nat' : 'symmetric nat');
+        }
+      }
+
+
+    const payload = {
+        candidate: e.candidate,
+        roomId: ROOM_ID
+    }
+
+    
+    if (e.candidate && can_call_addIceCandidate === 1){
+        // console.log('added new candidate in self');
+        // console.log(e.candidate);
+        peer.addIceCandidate(new RTCIceCandidate(e.candidate));
+    }
+
+    if (e.candidate){
+        // console.log('new candidate sent: ');
+        // console.log(payload.candidate);
+        socket.emit('candidate', payload);
+    }
+
+}
+
+
+
+
+peer.ondatachannel = e => {
+    peer.dc = e.channel;
+    peer.dc.onopen = () => console.log('connection open in Guest Side');
+    peer.dc.onmessage = (e) =>  console.log('Message received in Guest Side: ' + e.data);
+}
+
+
+const handleIceGatheringStateChange = (e) => {
+    switch(peer.iceGatheringState) {
+        case 'new':
+          console.log('iceGatheringState: new');
+          break;
+        case 'gathering':
+          console.log('iceGatheringState: gathering');
+          break;
+        case 'complete':
+          console.log('iceGatheringState: complete');
+          break;
+    }
+}
+
+peer.addEventListener('icegatheringstatechange', (e) => handleIceGatheringStateChange(e));
