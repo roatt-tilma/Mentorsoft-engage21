@@ -7,6 +7,11 @@
 <div class="container-flex">
 
     <div id="other-video-container" class="other-video-container">
+        <div class="overlay" id="other-overlay">
+            <div id="other-username">
+                Waiting...
+            </div>
+        </div>
         <video autoplay id = "other-video" class="other-video">
             <!-- Other user's Video Stream -->
         </video>
@@ -35,6 +40,15 @@
 
     <div class="my-video-container" id="my-video-container">
         <em id="hide-show" class="hide-show fas fa-chevron-right"></em>
+        <div class="overlay gap32" id="my-overlay">
+            <div>
+                <% if (userType === 'Guest'){%>
+                    <%= roomDet.guest.name %>
+                <%}else{%>
+                    <%= roomDet.host.name %>
+                <%}%>
+            </div>
+        </div>
         <video autoplay id = "my-video" class="my-video">
             <!-- Own Video Stream -->
         </video>

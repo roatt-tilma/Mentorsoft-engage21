@@ -31,8 +31,9 @@ body{
     position: absolute;
     right: 0;
     bottom: 10%;
-
+    width: 232px;
     display: flex;
+    transition: all 0.4s ease;
 }
 
 .hide-show {
@@ -49,6 +50,7 @@ body{
 }
 
 .other-video-container{
+    position: relative;
     height: 90%;
     flex: 2 2 auto;
     background-color: #bcbdff;
@@ -56,8 +58,8 @@ body{
 
 .my-video {
     object-fit: cover;
-    height: 160px;
-    width: 160px;
+    height: 200px;
+    width: 200px;
     transition: all 0.4s ease;
 }
 
@@ -104,6 +106,7 @@ body{
     left: 3%;
     border-radius: 5px;
     background-color: rgba(255, 255, 255, 0.3);
+    background-color: #4548F455;
     backdrop-filter: blur(12px);
 }
 
@@ -120,7 +123,7 @@ body{
     font-weight: 600;
     font-size: 0.9rem;
     letter-spacing: 0.04em;
-    color: #333;
+    color: #fff;
 }
 
 .arrow{
@@ -132,10 +135,46 @@ body{
     left: 1.2vw;
     clip-path: polygon(50% 100%, 0 50%, 100% 50%);
     background-color: rgba(255, 255, 255, 0.3);
+    background-color: #4548F455;
     backdrop-filter: blur(12px);
     background-blend-mode: screen;
 }
 
 .hide {
-    width: 0px;
+    width: 32px;
+}
+
+.hide video {
+    width: 0;
+}
+
+/* Overlay */
+
+.overlay {
+    background-color: #333;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    right: 0;
+    display: grid;
+    place-items: center;
+}
+
+.gap32 {
+    width: calc(100% - 32px);
+    background-color: #444;
+}
+
+.overlay > div{
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    background-color: #4548F4;
+    display: grid;
+    place-items: center;
+    color: #fff;
+}
+
+.hide-overlay {
+    display: none;
 }

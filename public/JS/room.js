@@ -33,17 +33,27 @@ const my_video_container = document.getElementById('my-video-container');
 const guestName = document.createElement('li');
 guestName.classList.add('info-list-elements');
 
+const otherUsername = document.getElementById('other-username');
 
 async function init() {
 
     stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
+        video: {
+            cursor: 'always'
+        },
+        audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            sampleRate: 44100
+        }
     });
 
     if(GUEST_NAME){
         guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
         info_list.appendChild(guestName);
+
+        otherUsername.innerText = HOST_NAME;
+
         stream.getTracks().forEach(track => peer.addTrack(track, stream));
         screen_share_btn.style.display = 'none';
     }
@@ -71,10 +81,16 @@ socket.on('join-room', async (roomDet) => {
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
 
+    otherUsername.innerText = GUEST_NAME;
+
     dataChannel = peer.createDataChannel('data_channel_webRTC');
     dataChannel.onopen = () => console.log('connection open in Host Side');
     dataChannel.onmessage = (e) => console.log('Message received in Host Side: ' + e.data);
     
+    socket.emit('host-video-bool', {
+        roomId: ROOM_ID,
+        video_bool
+    });
 
     peer.onnegotiationneeded = async () => {
         const offer = await peer.createOffer();
@@ -153,17 +169,41 @@ var can_call_addIceCandidate = 0;
 
 // functionalities of buttons
 
-
 var video_bool = false;
+const my_overlay = document.getElementById('my-overlay')
+const other_overlay = document.getElementById('other-overlay')
+
 
 video_btn.onclick = () => {
     video_bool = !video_bool;
+    
+    socket.emit('video-on-off', {
+        roomId: ROOM_ID,
+        video_bool
+    });
+    
+    if (!video_bool){
+        my_overlay.classList.remove('hide-overlay');
+    } else {
+        my_overlay.classList.add('hide-overlay');
+    }
+
+
     stream.getVideoTracks()[0].enabled = video_bool;
     video_icon.classList.toggle('fa');
     video_icon.classList.toggle('fa-video-camera');
     video_icon.classList.toggle('fas');
     video_icon.classList.toggle('fa-video-slash');
 }
+
+socket.on('video-on-off', (bool) => {
+    if (!bool){
+        other_overlay.classList.remove('hide-overlay');
+    } else {
+        other_overlay.classList.add('hide-overlay');
+    }
+});
+
 
 
 var audio_bool = false;
@@ -215,9 +255,7 @@ document.onclick = (e) =>{
     }
 }
 
-
-end_call_btn.onclick = () => {
-    peer.close();
+const endcall = () => {
     peer.close();
     socket.emit('end-call', {
         roomId: ROOM_ID
@@ -225,10 +263,16 @@ end_call_btn.onclick = () => {
     window.location.href = '/';
 }
 
+end_call_btn.onclick = endcall;
+
 socket.on('end-call', async () => {
     peer.close();
-    peer.close();
-    alert('Other user has ended the call. Redirecting to homepage...');
+    if (USER_TYPE === 'Guest'){
+        alert(`${HOST_NAME} has ended the call. Redirecting to homepage...`);
+    }
+    else{
+        alert(`${GUEST_NAME} has ended the call. Redirecting to homepage...`);
+    }
     await new Promise(r => setTimeout(r, 3000));
     window.location.href = '/';
 });
@@ -268,7 +312,7 @@ socket.on('display-stream-ended', () => {
 
 
 hide_show.onclick = () => {
-    myVideo.classList.toggle('hide');
+    my_video_container.classList.toggle('hide');
     hide_show.classList.toggle('fa-chevron-right');
     hide_show.classList.toggle('fa-chevron-left');
 }
@@ -282,7 +326,7 @@ function createPeer(){
     return new RTCPeerConnection({
         iceServers: [
             {
-                url: 'turn:numb.viagenie.ca',
+                urls: 'turn:numb.viagenie.ca',
                 credential: 'I1server',
                 username: 'roarout20@gmail.com',
             },
@@ -325,13 +369,26 @@ function createPeer(){
 
 }
 
-const handleOnConnectionStateChange = (e) => {
+const handleOnConnectionStateChange = async (e) => {
     switch (peer.connectionState){
         case 'connected':
             console.log('connection state: connected');
             break;
         case 'disconnected':
             console.log('conneciton state: disconnected');
+            if (window.location.href !== '/'){
+
+                peer.close();
+                if (USER_TYPE === 'Guest'){
+                    alert(`${HOST_NAME} has ended the call. Redirecting to homepage...`);
+                }
+                else{
+                    alert(`${GUEST_NAME} has ended the call. Redirecting to homepage...`);
+                }
+                await new Promise(r => setTimeout(r, 3000));
+                window.location.href = '/';
+                
+            }
             break;
         case 'closed':
             console.log('connection state: closed');
@@ -348,6 +405,7 @@ const handleOnConnectionStateChange = (e) => {
     }
 }
 
+peer.onconnectionstatechange = handleOnConnectionStateChange;
 
 var count = 0;
 var receivedDisplayStream;
@@ -358,6 +416,7 @@ peer.ontrack = async (e) => {
     if (count === 2){
         receivedDisplayStream = e.streams[0];
     }
+
     otherVideo.srcObject = e.streams[0];
 
 }
@@ -462,4 +521,4 @@ const handleIceGatheringStateChange = (e) => {
     }
 }
 
-peer.addEventListener('icegatheringstatechange', (e) => handleIceGatheringStateChange(e));
+peer.addEventListener('icegatheringstatechange', handleIceGatheringStateChange);

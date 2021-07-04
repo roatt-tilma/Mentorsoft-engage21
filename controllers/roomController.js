@@ -27,6 +27,7 @@ const create_room = (req, res) => {
     let hostName = req.body.hostName;
     let guestId = null;
     let guestName = null;
+    const userType = 'Host';
 
     if (!roomName) roomName = 'New Room';
     if (!roomPassword) roomPassword = randomPassword();
@@ -52,7 +53,7 @@ const create_room = (req, res) => {
 
     const roomDet = roomDetails.get(roomId);
 
-    res.render('room', { title: 'ROOM', roomDet });
+    res.render('room', { title: 'ROOM', roomDet, userType });
 
 }
 
@@ -67,13 +68,15 @@ const connect_guest = (req, res) => {
     const guestId = randomId();
     let guestName = req.body.guestName;
 
+    const userType = 'Guest';
+
     if (!guestName) guestName = 'Guest';
 
     if (givenPassword === roomPassword && roomDet.isFull === 0){
         roomDet.guest.name = guestName;
         roomDet.guest.id = guestId;
         roomDet.isFull = 1;
-        res.render('room', { title: roomId, roomDet})
+        res.render('room', { title: roomId, roomDet, userType});
     }
 
     else{
@@ -114,6 +117,14 @@ io.on('connection', socket => {
     socket.on('display-stream-ended', (data) => {
         socket.broadcast.to(data.roomId).emit('display-stream-ended');
     });
+
+    socket.on('video-on-off', (data) => {
+        socket.broadcast.to(data.roomId).emit('video-on-off', data.video_bool);
+    });
+
+    socket.on('host-video-bool', (data) => {
+        socket.broadcast.to(data.roomId).emit('video-on-off', data.video_bool);
+    })
 
 });
 
