@@ -37,6 +37,8 @@ const otherUsername = document.getElementById('other-username');
 
 async function init() {
 
+    disable_screen_share();
+
     stream = await navigator.mediaDevices.getUserMedia({
         video: {
             cursor: 'always'
@@ -82,9 +84,7 @@ socket.on('join-room', async (roomDet) => {
 
     otherUsername.innerText = GUEST_NAME;
 
-    screen_share_btn.disabled = false;
-    screen_share_btn.style.backgroundColor = '#4548f4';
-    screen_share_btn.style.cursor = 'pointer';
+    if (video_bool) enable_screen_share();
 
     dataChannel = peer.createDataChannel('data_channel_webRTC');
     dataChannel.onopen = () => console.log('connection open in Host Side');
@@ -191,6 +191,8 @@ video_btn.onclick = () => {
         my_overlay.classList.add('hide-overlay');
     }
 
+    if (video_bool && !share_bool && GUEST_ID) enable_screen_share();
+    if (share_bool || !video_bool) disable_screen_share();
 
     stream.getVideoTracks()[0].enabled = video_bool;
     video_icon.classList.toggle('fa');
@@ -280,21 +282,13 @@ socket.on('end-call', async () => {
     window.location.href = '/';
 });
 
-
-var share_bool = false;
-
 if(USER_TYPE === 'Guest'){
     screen_share_btn.style.display = 'none';
 }
 
-
-screen_share_btn.disabled = true;
-screen_share_btn.style.backgroundColor = '#777';
-screen_share_btn.style.cursor = 'auto';
-
+var share_bool = false;
 
 screen_share_btn.onclick = async () => {
-        share_bool = !share_bool;
 
         can_call_addIceCandidate = 0;
         
@@ -308,22 +302,23 @@ screen_share_btn.onclick = async () => {
                 sampleRate: 44100
             }
         });
+        
+        if (screen.getTracks()){
 
-        screen.getVideoTracks()[0].onended = () => {
-            socket.emit('display-stream-ended', {
-                roomId: ROOM_ID
-            });
+            screen.getVideoTracks()[0].onended = () => {
+                socket.emit('display-stream-ended', {
+                    roomId: ROOM_ID
+                });
+                share_bool = false;
+                enable_screen_share();
+            };
+    
+            disable_screen_share();
+            share_bool = true;
+     
+            screen.getTracks().forEach(track => peer.addTrack(track, screen));
 
-            screen_share_btn.disabled = false;
-            screen_share_btn.style.backgroundColor = '#4548f4';
-            screen_share_btn.style.cursor = 'pointer';
-        };
- 
-        screen.getTracks().forEach(track => peer.addTrack(track, screen));
-
-        screen_share_btn.disabled = true;
-        screen_share_btn.style.backgroundColor = '#777';
-        screen_share_btn.style.cursor = 'auto';
+        } 
 }
 
 
@@ -543,3 +538,17 @@ const handleIceGatheringStateChange = (e) => {
 }
 
 peer.addEventListener('icegatheringstatechange', handleIceGatheringStateChange);
+
+
+const disable_screen_share = () => {
+    screen_share_btn.disabled = true;
+    screen_share_btn.style.backgroundColor = '#777';
+    screen_share_btn.style.cursor = 'auto';
+}
+
+const enable_screen_share = () => {
+    screen_share_btn.disabled = false;
+    screen_share_btn.style.backgroundColor = '#4548f4';
+    screen_share_btn.style.cursor = 'pointer';
+}
+
