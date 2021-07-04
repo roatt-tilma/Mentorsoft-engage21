@@ -243,9 +243,19 @@ screen_share_btn.onclick = async () => {
             }
         });
 
+        screen.getVideoTracks()[0].onended = () => {
+            socket.emit('display-stream-ended', {
+                roomId: ROOM_ID
+            })
+        };
+ 
         screen.getTracks().forEach(track => peer.addTrack(track, screen));
 }
 
+
+socket.on('display-stream-ended', () => {
+    otherVideo.srcObject = receivedDisplayStream;
+});
 
 
 hide_show.onclick = () => {
@@ -310,45 +320,15 @@ peer.onconnectionstatechange = (e) => {
 }
 
 
-
-var receivedStream;
 var count = 0;
+var receivedDisplayStream;
+
 peer.ontrack = async (e) => {
+
     count++;
-    console.log('New Track:');
-    console.log(e.streams[0]);
-
     if (count === 2){
-        receivedStream = e.streams[0]
+        receivedDisplayStream = e.streams[0];
     }
-
     otherVideo.srcObject = e.streams[0];
-
-    if (count >= 3){
-        await new Promise(r => setTimeout(r, 8000));
-        otherVideo.srcObject = receivedStream;
-    }
-}
-
-
-peer.onicecandidate = (e) => {
-
-    const payload = {
-        candidate: e.candidate,
-        roomId: ROOM_ID
-    }
-
-    
-    if (e.candidate && can_call_addIceCandidate === 1){
-        console.log('added new candidate in self');
-        console.log(e.candidate);
-        peer.addIceCandidate(new RTCIceCandidate(e.candidate));
-    }
-
-    if (e.candidate){
-        console.log('new candidate sent: ');
-        console.log(payload.candidate);
-        socket.emit('candidate', payload);
-    }
 
 }
