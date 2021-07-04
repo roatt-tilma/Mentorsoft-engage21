@@ -239,6 +239,8 @@ var share_bool = false;
 screen_share_btn.onclick = async () => {
         share_bool = !share_bool;
 
+        can_call_addIceCandidate = 0;
+        
         const screen = await navigator.mediaDevices.getDisplayMedia({
             video: {
                 cursor: 'always'
@@ -359,8 +361,6 @@ peer.ontrack = async (e) => {
     otherVideo.srcObject = e.streams[0];
 
 }
-
-peer.ontrack = handleOnTrackEvent;
 
 function parseCandidate(line) {
     var parts;
