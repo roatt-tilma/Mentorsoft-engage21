@@ -231,12 +231,19 @@ screen_share_btn.onclick = async () => {
             }
         });
 
-        screen.getVideoTracks()[0].onended = () => console.log('video stream ended');
-        if (screen.getAudioTracks()[0]) screen.getAudioTracks()[0].onended = () => console.log('audio stream ended');
+        screen.getVideoTracks()[0].onended = () => {
+            socket.emit('display-stream-ended', {
+                roomId: ROOM_ID
+            })
+        };
  
         screen.getTracks().forEach(track => peer.addTrack(track, screen));
 }
 
+
+socket.on('display-stream-ended', () => {
+    otherVideo.srcObject = receivedDisplayStream;
+});
 
 
 hide_show.onclick = () => {
@@ -308,24 +315,15 @@ peer.onconnectionstatechange = (e) => {
 }
 
 
-
-var receivedStream;
-var receivedDisplayStream;
 var count = 0;
+var receivedDisplayStream;
 
 peer.ontrack = async (e) => {
 
     count++;
-    console.log('New Track:');
-    console.log(e.streams[0]);
-
     if (count === 2){
-        receivedStream = e.streams[0];
-    }
-    if (count >= 3){
         receivedDisplayStream = e.streams[0];
     }
-
     otherVideo.srcObject = e.streams[0];
 
 }

@@ -110,6 +110,11 @@ io.on('connection', socket => {
         roomDetails.delete(data.roomId);
         socket.broadcast.to(data.roomId).emit('end-call');
     });
+
+    socket.on('display-stream-ended', (data) => {
+        socket.broadcast.to(data.roomId).emit('display-stream-ended');
+    });
+
 });
 
 
