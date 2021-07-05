@@ -101,6 +101,7 @@ socket.on('join-room', async (roomDet) => {
     const start_meeting_btn = document.getElementById('start-meeting-btn');
 
     start_meeting_btn.onclick = async () => {
+        start_meeting_btn.disabled = true;
         await ask_for_user_media();
         full_overlay.classList.add('hide-full-overlay');
         stream.getTracks().forEach(track => peer.addTrack(track, stream));
@@ -110,7 +111,6 @@ socket.on('join-room', async (roomDet) => {
             roomId: ROOM_ID,
             video_bool
         });
-        
         disable_screen_share(); 
     }
 
@@ -279,6 +279,7 @@ end_call_btn.onclick = () => {
         roomId: ROOM_ID
     });
     stream.getTracks().forEach(track => track.stop());
+
     if (screen){
         screen.getTracks().forEach(track => track.stop());
     }
@@ -293,6 +294,15 @@ end_call_btn.onclick = () => {
 
 socket.on('end-call', () => {
     stream.getTracks().forEach(track => track.stop());
+    
+    if (screen){
+        screen.getTracks().forEach(track => track.stop());
+    }
+
+    if (audio_track){
+        audio_track.stop();
+    }
+
     aftercall_overlay();
 });
 
@@ -300,8 +310,8 @@ socket.on('end-call', () => {
 // screen-share
 
 var share_bool = false;
-var audio_track;
-var screen;
+var audio_track = null;
+var screen = null;
 
 screen_share_btn.onclick = async () => {
         
