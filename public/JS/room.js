@@ -473,8 +473,8 @@ peer.onicecandidate = (e) => {
 
     
     if (e.candidate && can_call_addIceCandidate === 1){
-        console.log('added new candidate in self');
-        console.log(e.candidate);
+        // console.log('added new candidate in self');
+        // console.log(e.candidate);
         peer.addIceCandidate(new RTCIceCandidate(e.candidate));
     }
 
