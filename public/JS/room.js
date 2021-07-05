@@ -441,6 +441,7 @@ peer.onconnectionstatechange = (e) => {
                 window.location.href = '/';
                 
             }
+            
             break;
         case 'closed':
             console.log('connection state: closed');
