@@ -35,36 +35,15 @@ guestName.classList.add('info-list-elements');
 
 const otherUsername = document.getElementById('other-username');
 
+const start_meeting_btn = document.getElementById('start-meeting-btn');
+
 async function init() {
-
-    disable_screen_share();
-
-    stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-            cursor: 'always'
-        },
-        audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            sampleRate: 44100
-        }
-    });
 
     if(GUEST_NAME){
         guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
         info_list.appendChild(guestName);
-
-        otherUsername.innerText = HOST_NAME;
-
-        stream.getTracks().forEach(track => peer.addTrack(track, stream));
     }
 
-
-    stream.getVideoTracks()[0].enabled = video_bool;
-    stream.getAudioTracks()[0].enabled = audio_bool;
-
-    myVideo.srcObject = stream;
-    myVideo.muted = true; 
     
     socket.emit('join-room', {
         roomId: ROOM_ID,
@@ -82,37 +61,26 @@ socket.on('join-room', async (roomDet) => {
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
 
-    otherUsername.innerText = GUEST_NAME;
-
-    if (video_bool) enable_screen_share();
-
     dataChannel = peer.createDataChannel('data_channel_webRTC');
     dataChannel.onopen = () => console.log('connection open in Host Side');
     dataChannel.onmessage = (e) => console.log('Message received in Host Side: ' + e.data);
     
-    socket.emit('host-video-bool', {
-        roomId: ROOM_ID,
-        video_bool
-    });
 
-    peer.onnegotiationneeded = async () => {
-        const offer = await peer.createOffer();
-        await peer.setLocalDescription(offer);
+    start_meeting_btn.onclick = async () => {
+        can_call_addIceCandidate = 0;
+        await ask_for_user_media();
+        stream.getTracks().forEach(track => peer.addTrack(track, stream));
+        otherUsername.innerText = GUEST_NAME;
+
+        socket.emit('meeting-started', {
+            roomId: ROOM_ID,
+            video_bool
+        });
         
-        const payload = {
-            sdp: peer.localDescription,
-            roomId: ROOM_ID
-        }
-        
-        // console.log('offer sent from host:');
-        // console.log(payload.sdp);
-    
-        socket.emit('offer', payload);
+        if (video_bool) enable_screen_share();
+        else disable_screen_share(); 
     }
 
-    
-    stream.getTracks().forEach(track => peer.addTrack(track, stream));
-    
 });
 
 socket.on('offer', async (offer) => {
@@ -162,7 +130,13 @@ socket.on('candidate', (candidate) => {
 
         peer.addIceCandidate(candidate);
 
-})
+});
+
+socket.on('meeting-started', async () => {
+    otherUsername.innerText = HOST_NAME;
+    await ask_for_user_media();
+    stream.getTracks().forEach(track => peer.addTrack(track, stream));
+});
 
 
 // addIceCandidate must only be called after the setRemoteDescription is called ie. answer is set
@@ -283,7 +257,7 @@ socket.on('end-call', async () => {
 });
 
 if(USER_TYPE === 'Guest'){
-    screen_share_btn.style.display = 'none';
+    start_meeting_btn.style.display = 'none';
 }
 
 var share_bool = false;
@@ -480,7 +454,6 @@ function parseCandidate(line) {
 var candidates = {};
 peer.onicecandidate = (e) => {
 
-
     if (e.candidate && e.candidate.candidate.indexOf('srflx') !== -1) {
         var cand = parseCandidate(e.candidate.candidate);
         if (!candidates[cand.relatedPort]) candidates[cand.relatedPort] = [];
@@ -500,8 +473,8 @@ peer.onicecandidate = (e) => {
 
     
     if (e.candidate && can_call_addIceCandidate === 1){
-        // console.log('added new candidate in self');
-        // console.log(e.candidate);
+        console.log('added new candidate in self');
+        console.log(e.candidate);
         peer.addIceCandidate(new RTCIceCandidate(e.candidate));
     }
 
@@ -552,3 +525,37 @@ const enable_screen_share = () => {
     screen_share_btn.style.cursor = 'pointer';
 }
 
+const ask_for_user_media = async () => {
+    stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+            cursor: 'always'
+        },
+        audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            sampleRate: 44100
+        }
+    });
+
+    stream.getVideoTracks()[0].enabled = video_bool;
+    stream.getAudioTracks()[0].enabled = audio_bool;
+
+    myVideo.srcObject = stream;
+    myVideo.muted = true; 
+
+}
+
+peer.onnegotiationneeded = async () => {
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    
+    const payload = {
+        sdp: peer.localDescription,
+        roomId: ROOM_ID
+    }
+    
+    // console.log('offer sent from host:');
+    // console.log(payload.sdp);
+
+    socket.emit('offer', payload);
+}

@@ -122,8 +122,9 @@ io.on('connection', socket => {
         socket.broadcast.to(data.roomId).emit('video-on-off', data.video_bool);
     });
 
-    socket.on('host-video-bool', (data) => {
+    socket.on('meeting-started', (data) => {
         socket.broadcast.to(data.roomId).emit('video-on-off', data.video_bool);
+        socket.broadcast.to(data.roomId).emit('meeting-started');
     })
 
 });
