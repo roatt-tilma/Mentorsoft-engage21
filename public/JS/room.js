@@ -206,6 +206,7 @@ var audio_bool = false;
 audio_btn.onclick = () => {
     audio_bool = !audio_bool;
     stream.getAudioTracks()[0].enabled = audio_bool;
+    if(audio_track) audio_track.enabled = audio_bool;
     audio_icon.classList.toggle('fa');
     audio_icon.classList.toggle('fa-microphone');
     audio_icon.classList.toggle('fas');
@@ -291,6 +292,7 @@ socket.on('end-call', () => {
 // screen-share
 
 var share_bool = false;
+var audio_track;
 
 screen_share_btn.onclick = async () => {
         
@@ -305,6 +307,17 @@ screen_share_btn.onclick = async () => {
             }
         });
         
+        const userTrack = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
+        });
+
+        audio_track = userTrack.getAudioTracks()[0];
+        audio_track.enabled = audio_bool;
+
         if (screen.getTracks()){
 
             screen.getVideoTracks()[0].onended = () => {
@@ -313,12 +326,14 @@ screen_share_btn.onclick = async () => {
                 });
                 share_bool = false;
                 if(video_bool) enable_screen_share();
+                audio_track = null;
             };
     
             disable_screen_share();
             share_bool = true;
      
             screen.getTracks().forEach(track => peer.addTrack(track, screen));
+            peer.addTrack(audio_track, screen);
 
         } 
 }
@@ -327,7 +342,7 @@ screen_share_btn.onclick = async () => {
 //when screenshare is ended
 
 socket.on('display-stream-ended', () => {
-    otherVideo.srcObject = receivedDisplayStream;
+    otherVideo.srcObject = receivedStream;
 });
 
 
@@ -446,13 +461,13 @@ peer.onconnectionstatechange = (e) => {
 // handle when new stream is sent
 
 var count = 0;
-var receivedDisplayStream;
+var receivedStream;
 
 peer.ontrack = async (e) => {
 
     count++;
     if (count === 2){
-        receivedDisplayStream = e.streams[0];
+        receivedStream = e.streams[0];
     }
 
     otherVideo.srcObject = e.streams[0];
