@@ -5,6 +5,7 @@
 </script> 
 
 <div class="container-flex">
+    <div class="full-overlay"></div>
 
     <div id="other-video-container" class="other-video-container">
         <div class="overlay" id="other-overlay">
@@ -19,10 +20,6 @@
     
     <div class = "controls">
         
-        <div>
-            <em id="info-icon" class = "info-icon fas fa-info-circle"></em>
-        </div>
-        
         <div id = "video-buttons" class="video-buttons">
             <ul>
                 <li><button id="screen-share-btn"><em id="screen-share-icon" class = "fa fa-desktop"></em></button></li>
@@ -31,10 +28,6 @@
                 <li><button id="end-call-btn"  style = "background-color: #E33A6D"><em class = "fa fa-phone"></em></button></li>
                 <li><button id="start-meeting-btn"><em>Start</em></button></li>
             </ul>
-        </div>
-        
-        <div>
-            <em id="chat-icon" class = "chat-icon fas fa-comments"></em>
         </div>
         
     </div>
@@ -53,6 +46,35 @@
         <video autoplay id = "my-video" class="my-video">
             <!-- Own Video Stream -->
         </video>
+    </div>
+
+</div>
+
+<!-- Absolute icons -->
+<div>
+    <em id="info-icon" class = "info-icon fas fa-info-circle"></em>
+</div>
+
+<div>
+    <em id="chat-icon" class = "chat-icon fas fa-comments"></em>
+</div>
+
+
+<div class="chat-window" id="chat-window">
+    <div class="chat-head">Chat</div>
+
+    <div class="chat-area" id="chat-area">
+
+        <div class="chat">
+            <span class="chat-name">Welcome</span>
+            <span class="chat-msg">Messages can only be seen by people in the room and are deleted when the room ends.</span>
+        </div>
+
+    </div>
+
+    <div class="send-area">
+        <input type="text" placeholder="Enter message" id="msg-data">
+        <button id="msg-send">Send</button>
     </div>
 </div>
 

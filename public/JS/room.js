@@ -30,44 +30,58 @@ const info_list = document.getElementById('info-list');
 const hide_show = document.getElementById('hide-show');
 const my_video_container = document.getElementById('my-video-container');
 
-const guestName = document.createElement('li');
-guestName.classList.add('info-list-elements');
-
 const otherUsername = document.getElementById('other-username');
 
 const start_meeting_btn = document.getElementById('start-meeting-btn');
 
+const chat_area = document.getElementById('chat-area');
+
+const msg_data = document.getElementById('msg-data');
+const msg_send = document.getElementById('msg-send');
+
+const chat_icon = document.getElementById('chat-icon');
+const chat_window = document.getElementById('chat-window');
+
+
+
+
 async function init() {
 
-    if(GUEST_NAME){
-        guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
-        info_list.appendChild(guestName);
+    if(USER_TYPE === 'Guest'){
+        add_guest_name_to_info();
+        start_meeting_btn.style.display = 'none';
     }
 
-    
     socket.emit('join-room', {
         roomId: ROOM_ID,
     });
 
 }
 
-//make connection between the guest and the host
+
+// join-room is emitted by guest and this code is only accessible by the host
 
 socket.on('join-room', async (roomDet) => {
 
     GUEST_ID = roomDet.guest.id;
     GUEST_NAME = roomDet.guest.name;
 
-    guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
-    info_list.appendChild(guestName);
+    add_guest_name_to_info();
 
     dataChannel = peer.createDataChannel('data_channel_webRTC');
     dataChannel.onopen = () => console.log('connection open in Host Side');
-    dataChannel.onmessage = (e) => console.log('Message received in Host Side: ' + e.data);
+    dataChannel.onmessage = (e) => {
+        display_msg(GUEST_NAME, e.data);
+    };
     
+    msg_send.onclick = () => {
+        const msg = display_my_message();
+        if(msg !== '') {
+            dataChannel.send(msg);
+        }
+    }
 
     start_meeting_btn.onclick = async () => {
-        can_call_addIceCandidate = 0;
         await ask_for_user_media();
         stream.getTracks().forEach(track => peer.addTrack(track, stream));
         otherUsername.innerText = GUEST_NAME;
@@ -86,10 +100,6 @@ socket.on('join-room', async (roomDet) => {
 socket.on('offer', async (offer) => {
 
     offer = new RTCSessionDescription(offer);
-    
-
-    // console.log('offer received');
-    // console.log(offer);
 
     await peer.setRemoteDescription(offer);
     const answer = await peer.createAnswer();
@@ -101,35 +111,20 @@ socket.on('offer', async (offer) => {
         roomId: ROOM_ID
     }
 
-    // console.log('answer sent');
-    // console.log(payload.sdp);
-
     socket.emit('answer', payload);
 });
 
 
 socket.on('answer', (answer) => {
     answer = new RTCSessionDescription(answer);
-
-    // console.log('answer received');
-    // console.log(answer);
-
     peer.setRemoteDescription(answer).catch(e => console.log(e));
-
     can_call_addIceCandidate = 1;
-
 });
 
 
 socket.on('candidate', (candidate) => {
-
-        candidate = new RTCIceCandidate(candidate);
-        
-        // console.log('received candidate');
-        // console.log(candidate);
-
-        peer.addIceCandidate(candidate);
-
+    candidate = new RTCIceCandidate(candidate);
+    peer.addIceCandidate(candidate);
 });
 
 socket.on('meeting-started', async () => {
@@ -147,8 +142,8 @@ var can_call_addIceCandidate = 0;
 // functionalities of buttons
 
 var video_bool = false;
-const my_overlay = document.getElementById('my-overlay')
-const other_overlay = document.getElementById('other-overlay')
+const my_overlay = document.getElementById('my-overlay');
+const other_overlay = document.getElementById('other-overlay');
 
 
 video_btn.onclick = () => {
@@ -197,6 +192,14 @@ audio_btn.onclick = () => {
 }
 
 
+// chat display 
+
+chat_icon.onclick = () => {
+    chat_window.classList.toggle('chat-show');
+}
+
+// info display
+
 info.style.display = 'none';
 
 var check = 0;
@@ -234,17 +237,17 @@ document.onclick = (e) =>{
     }
 }
 
-const endcall = () => {
+
+
+end_call_btn.onclick = () => {
     peer.close();
     socket.emit('end-call', {
         roomId: ROOM_ID
     });
     window.location.href = '/';
-}
+};
 
-end_call_btn.onclick = endcall;
-
-socket.on('end-call', async () => {
+socket.on('end-call', () => {
     peer.close();
     if (USER_TYPE === 'Guest'){
         alert(`${HOST_NAME} has ended the call. Redirecting to homepage...`);
@@ -252,19 +255,15 @@ socket.on('end-call', async () => {
     else{
         alert(`${GUEST_NAME} has ended the call. Redirecting to homepage...`);
     }
-    await new Promise(r => setTimeout(r, 1000));
     window.location.href = '/';
 });
 
-if(USER_TYPE === 'Guest'){
-    start_meeting_btn.style.display = 'none';
-}
+
+// screen-share
 
 var share_bool = false;
 
 screen_share_btn.onclick = async () => {
-
-        can_call_addIceCandidate = 0;
         
         const screen = await navigator.mediaDevices.getDisplayMedia({
             video: {
@@ -296,10 +295,14 @@ screen_share_btn.onclick = async () => {
 }
 
 
+//when screenshare is ended
+
 socket.on('display-stream-ended', () => {
     otherVideo.srcObject = receivedDisplayStream;
 });
 
+
+//hide or show user's video
 
 hide_show.onclick = () => {
     my_video_container.classList.toggle('hide');
@@ -308,8 +311,8 @@ hide_show.onclick = () => {
 }
 
 
-// functions related to webRTC connection
 
+// functions related to webRTC connection
 
 function createPeer(){
 
@@ -359,12 +362,28 @@ function createPeer(){
 
 }
 
-const handleOnConnectionStateChange = async (e) => {
+peer.onnegotiationneeded = async () => {
+
+    can_call_addIceCandidate = 0;
+
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    
+    const payload = {
+        sdp: peer.localDescription,
+        roomId: ROOM_ID
+    }
+
+    socket.emit('offer', payload);
+}
+
+peer.onconnectionstatechange = (e) => {
     switch (peer.connectionState){
         case 'connected':
             console.log('connection state: connected');
             break;
         case 'disconnected':
+
             console.log('conneciton state: disconnected');
             if (window.location.href !== '/'){
 
@@ -375,7 +394,6 @@ const handleOnConnectionStateChange = async (e) => {
                 else{
                     alert(`${GUEST_NAME} has been disconnected. Redirecting to homepage...`);
                 }
-                await new Promise(r => setTimeout(r, 1000));
                 window.location.href = '/';
                 
             }
@@ -395,7 +413,8 @@ const handleOnConnectionStateChange = async (e) => {
     }
 }
 
-peer.onconnectionstatechange = handleOnConnectionStateChange;
+
+// handle when new stream is sent
 
 var count = 0;
 var receivedDisplayStream;
@@ -411,7 +430,10 @@ peer.ontrack = async (e) => {
 
 }
 
-function parseCandidate(line) {
+
+//function used in logic to find if the NAT is symmetric
+
+const parseCandidate = (line) => {
     var parts;
     // Parse both variants.
     if (line.indexOf('a=candidate:') === 0) {
@@ -454,6 +476,7 @@ function parseCandidate(line) {
 var candidates = {};
 peer.onicecandidate = (e) => {
 
+    //logic to find if the NAT is symmetric
     if (e.candidate && e.candidate.candidate.indexOf('srflx') !== -1) {
         var cand = parseCandidate(e.candidate.candidate);
         if (!candidates[cand.relatedPort]) candidates[cand.relatedPort] = [];
@@ -473,30 +496,32 @@ peer.onicecandidate = (e) => {
 
     
     if (e.candidate && can_call_addIceCandidate === 1){
-        // console.log('added new candidate in self');
-        // console.log(e.candidate);
         peer.addIceCandidate(new RTCIceCandidate(e.candidate));
     }
 
     if (e.candidate){
-        // console.log('new candidate sent: ');
-        // console.log(payload.candidate);
         socket.emit('candidate', payload);
     }
 
 }
 
-
-
-
+//when new data channel is created - code used only by guest
 peer.ondatachannel = e => {
     peer.dc = e.channel;
     peer.dc.onopen = () => console.log('connection open in Guest Side');
-    peer.dc.onmessage = (e) =>  console.log('Message received in Guest Side: ' + e.data);
+    peer.dc.onmessage = (event) =>  {
+        display_msg(HOST_NAME, event.data);
+    }
+
+    msg_send.onclick = () => {
+        const msg = display_my_message();
+        if(msg !== '') {
+            peer.dc.send(msg);
+        }
+    }
 }
 
-
-const handleIceGatheringStateChange = (e) => {
+peer.addEventListener('icegatheringstatechange', (e) => {
     switch(peer.iceGatheringState) {
         case 'new':
           console.log('iceGatheringState: new');
@@ -508,10 +533,11 @@ const handleIceGatheringStateChange = (e) => {
           console.log('iceGatheringState: complete');
           break;
     }
-}
+});
 
-peer.addEventListener('icegatheringstatechange', handleIceGatheringStateChange);
 
+
+//user defined functions
 
 const disable_screen_share = () => {
     screen_share_btn.disabled = true;
@@ -545,17 +571,30 @@ const ask_for_user_media = async () => {
 
 }
 
-peer.onnegotiationneeded = async () => {
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
-    
-    const payload = {
-        sdp: peer.localDescription,
-        roomId: ROOM_ID
-    }
-    
-    // console.log('offer sent from host:');
-    // console.log(payload.sdp);
+// display message in the ui
 
-    socket.emit('offer', payload);
+const display_msg = (sender, message) => {
+    const chat_div = document.createElement('div');
+    chat_div.classList.add('chat');
+    chat_div.innerHTML = `
+        <span class="chat-name">${sender}</span>
+        <span class="chat-msg">${message}</span>
+    `;
+    chat_area.appendChild(chat_div);
+}
+
+const display_my_message = () => {
+    const message = msg_data.value.trim();
+    msg_data.value = null;
+    if(message !== ''){
+        display_msg("You", message);
+    }
+    return message;
+}
+
+const add_guest_name_to_info = () => {
+    const guestName = document.createElement('li');
+    guestName.classList.add('info-list-elements');
+    guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
+    info_list.appendChild(guestName);
 }
