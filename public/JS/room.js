@@ -247,6 +247,7 @@ end_call_btn.onclick = () => {
     window.location.href = '/';
 };
 
+
 socket.on('end-call', () => {
     peer.close();
     if (USER_TYPE === 'Guest'){
