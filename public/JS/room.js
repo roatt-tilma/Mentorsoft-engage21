@@ -91,8 +91,7 @@ socket.on('join-room', async (roomDet) => {
             video_bool
         });
         
-        if (video_bool) enable_screen_share();
-        else disable_screen_share(); 
+        disable_screen_share(); 
     }
 
 });
@@ -128,6 +127,7 @@ socket.on('candidate', (candidate) => {
 });
 
 socket.on('meeting-started', async () => {
+    disable_screen_share();
     otherUsername.innerText = HOST_NAME;
     await ask_for_user_media();
     stream.getTracks().forEach(track => peer.addTrack(track, stream));
@@ -284,7 +284,7 @@ screen_share_btn.onclick = async () => {
                     roomId: ROOM_ID
                 });
                 share_bool = false;
-                enable_screen_share();
+                if(video_bool) enable_screen_share();
             };
     
             disable_screen_share();
