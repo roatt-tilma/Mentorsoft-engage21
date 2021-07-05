@@ -32,8 +32,6 @@ const my_video_container = document.getElementById('my-video-container');
 
 const otherUsername = document.getElementById('other-username');
 
-const start_meeting_btn = document.getElementById('start-meeting-btn');
-
 const chat_area = document.getElementById('chat-area');
 
 const msg_data = document.getElementById('msg-data');
@@ -42,14 +40,21 @@ const msg_send = document.getElementById('msg-send');
 const chat_icon = document.getElementById('chat-icon');
 const chat_window = document.getElementById('chat-window');
 
+const id_copy = document.getElementById('id-copy');
+const password_copy = document.getElementById('password-copy');
 
 
+const full_overlay = document.getElementById('full-overlay');
 
 async function init() {
 
     if(USER_TYPE === 'Guest'){
         add_guest_name_to_info();
-        start_meeting_btn.style.display = 'none';
+        full_overlay.innerHTML = 'Waiting for host to start ...';
+    }
+
+    if(USER_TYPE === 'Host'){
+        full_overlay.innerHTML = 'Waiting for someone to join ...';
     }
 
     socket.emit('join-room', {
@@ -74,6 +79,16 @@ socket.on('join-room', async (roomDet) => {
         display_msg(GUEST_NAME, e.data);
     };
     
+    msg_data.addEventListener('keyup', (e) => {
+        if(e.key === 'Enter'){
+            e.preventDefault();
+            const msg = display_my_message();
+            if(msg !== '') {
+                dataChannel.send(msg);
+            }
+        }
+    });
+
     msg_send.onclick = () => {
         const msg = display_my_message();
         if(msg !== '') {
@@ -81,11 +96,16 @@ socket.on('join-room', async (roomDet) => {
         }
     }
 
+    full_overlay.innerHTML = '<button id="start-meeting-btn" class="start-meeting-btn">Start Room</button>';
+
+    const start_meeting_btn = document.getElementById('start-meeting-btn');
+
     start_meeting_btn.onclick = async () => {
         await ask_for_user_media();
+        full_overlay.classList.add('hide-full-overlay');
         stream.getTracks().forEach(track => peer.addTrack(track, stream));
         otherUsername.innerText = GUEST_NAME;
-
+        
         socket.emit('meeting-started', {
             roomId: ROOM_ID,
             video_bool
@@ -130,6 +150,7 @@ socket.on('meeting-started', async () => {
     disable_screen_share();
     otherUsername.innerText = HOST_NAME;
     await ask_for_user_media();
+    full_overlay.classList.add('hide-full-overlay');
     stream.getTracks().forEach(track => peer.addTrack(track, stream));
 });
 
@@ -231,32 +252,39 @@ document.onclick = (e) =>{
         && e.target.id !== 'info-list' 
         && e.target.className !== 'info-list-elements'
         && e.target.id !== 'arrow'
+        && e.target.id !== 'id-copy'
+        && e.target.id !== 'password-copy'
         && check === 1){
         info.style.display = 'none';
         check = 0;
     }
 }
 
+id_copy.onclick = () => {
+    copy_helper(id_copy, ROOM_ID);
+}
 
+password_copy.onclick = () => {
+    copy_helper(password_copy, ROOM_PASSWORD);
+}
+
+const aftercall_overlay = () => {
+    full_overlay.innerHTML = 'The meeting has ended!';
+    full_overlay.classList.remove('hide-full-overlay');
+}
 
 end_call_btn.onclick = () => {
-    peer.close();
     socket.emit('end-call', {
         roomId: ROOM_ID
     });
-    window.location.href = '/';
+    stream.getTracks().forEach(track => track.stop());
+    aftercall_overlay();
 };
 
 
 socket.on('end-call', () => {
-    peer.close();
-    if (USER_TYPE === 'Guest'){
-        alert(`${HOST_NAME} has ended the call. Redirecting to homepage...`);
-    }
-    else{
-        alert(`${GUEST_NAME} has ended the call. Redirecting to homepage...`);
-    }
-    window.location.href = '/';
+    stream.getTracks().forEach(track => track.stop());
+    aftercall_overlay();
 });
 
 
@@ -514,6 +542,16 @@ peer.ondatachannel = e => {
         display_msg(HOST_NAME, event.data);
     }
 
+    msg_data.addEventListener('keyup', (event) => {
+        if(event.key === 'Enter'){
+            event.preventDefault();
+            const msg = display_my_message();
+            if(msg !== '') {
+                peer.dc.send(msg);
+            }
+        }
+    });
+
     msg_send.onclick = () => {
         const msg = display_my_message();
         if(msg !== '') {
@@ -598,4 +636,18 @@ const add_guest_name_to_info = () => {
     guestName.classList.add('info-list-elements');
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
+}
+
+const copy_helper = async (icon, copy_text) => {
+    try {
+        await navigator.clipboard.writeText(copy_text);
+        icon.classList.remove('fa-clipboard');
+        icon.classList.add('fa-clipboard-check');
+        await new Promise(r => setTimeout(r, 2000));
+        icon.classList.remove('fa-clipboard-check');
+        icon.classList.add('fa-clipboard');
+
+    }catch(e){
+        console.log(e);
+    }
 }

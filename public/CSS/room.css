@@ -101,6 +101,11 @@ body{
     right: 4%;
 }
 
+.copy-icon {
+    cursor: pointer;
+    margin-left: 5px;
+}
+
 .video-buttons button{
     height: 40px;
     width: 40px;
@@ -289,10 +294,19 @@ body{
     position: absolute;
     height: 100%;
     width: 100%;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(12px);
+    background-color: #c4c4ff;
     z-index: 10;
-    display: none;
+    display: grid;
+    place-items: center;
+    font-weight: 600;
+}
+
+.start-meeting-btn {
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 100px;
+    background: #fff;
+    box-shadow: 0 3px 20px rgb(0 0 0 / 20%);
 }
 
 /* Media queries  */
@@ -307,4 +321,8 @@ body{
 .chat-show {
     display: flex;
     margin-right: 0;
+}
+
+.hide-full-overlay{
+    display: none;
 }
