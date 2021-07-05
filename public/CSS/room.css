@@ -307,6 +307,7 @@ body{
     border-radius: 100px;
     background: #fff;
     box-shadow: 0 3px 20px rgb(0 0 0 / 20%);
+    cursor: pointer;
 }
 
 /* Media queries  */
