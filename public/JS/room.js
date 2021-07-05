@@ -110,7 +110,7 @@ socket.on('join-room', async (roomDet) => {
         socket.emit('offer', payload);
     }
 
-
+    
     stream.getTracks().forEach(track => peer.addTrack(track, stream));
     
 });
