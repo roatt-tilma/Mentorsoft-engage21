@@ -279,6 +279,14 @@ end_call_btn.onclick = () => {
         roomId: ROOM_ID
     });
     stream.getTracks().forEach(track => track.stop());
+    if (screen){
+        screen.getTracks().forEach(track => track.stop());
+    }
+
+    if (audio_track){
+        audio_track.stop();
+    }
+
     aftercall_overlay();
 };
 
@@ -293,10 +301,11 @@ socket.on('end-call', () => {
 
 var share_bool = false;
 var audio_track;
+var screen;
 
 screen_share_btn.onclick = async () => {
         
-        const screen = await navigator.mediaDevices.getDisplayMedia({
+        screen = await navigator.mediaDevices.getDisplayMedia({
             video: {
                 cursor: 'always'
             },
@@ -327,6 +336,7 @@ screen_share_btn.onclick = async () => {
                 share_bool = false;
                 if(video_bool) enable_screen_share();
                 audio_track = null;
+                screen = null;
             };
     
             disable_screen_share();
@@ -441,7 +451,7 @@ peer.onconnectionstatechange = (e) => {
                 window.location.href = '/';
                 
             }
-            
+
             break;
         case 'closed':
             console.log('connection state: closed');
