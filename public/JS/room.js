@@ -206,6 +206,7 @@ var audio_bool = false;
 audio_btn.onclick = () => {
     audio_bool = !audio_bool;
     stream.getAudioTracks()[0].enabled = audio_bool;
+    console.log(audio_track);
     if(audio_track) audio_track.enabled = audio_bool;
     audio_icon.classList.toggle('fa');
     audio_icon.classList.toggle('fa-microphone');
