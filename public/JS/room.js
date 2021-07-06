@@ -449,18 +449,6 @@ peer.onconnectionstatechange = (e) => {
         case 'disconnected':
 
             console.log('conneciton state: disconnected');
-            if (window.location.href !== '/'){
-
-                peer.close();
-                if (USER_TYPE === 'Guest'){
-                    alert(`${HOST_NAME} has been disconnected. Redirecting to homepage...`);
-                }
-                else{
-                    alert(`${GUEST_NAME} has been disconnected. Redirecting to homepage...`);
-                }
-                window.location.href = '/';
-                
-            }
 
             break;
         case 'closed':
