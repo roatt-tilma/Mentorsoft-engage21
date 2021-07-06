@@ -29,9 +29,9 @@ const create_room = (req, res) => {
     let guestName = null;
     const userType = 'Host';
 
-    if (!roomName) roomName = 'New Room';
-    if (!roomPassword) roomPassword = randomPassword();
     if (!hostName) hostName = 'Host';
+    if (!roomName) roomName = `${hostName}'s Room`;
+    if (!roomPassword) roomPassword = randomPassword();
 
 
     roomDetails.set(roomId, {

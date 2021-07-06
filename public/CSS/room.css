@@ -301,6 +301,20 @@ body{
     font-weight: 600;
 }
 
+.full-overlay p{
+    text-align: center;
+    color: #4548F4;
+    position: absolute;
+    top: 0;
+    font-size: 3rem;
+    letter-spacing: 0.05rem;
+}
+
+.full-overlay span{
+    letter-spacing: 0.05rem;
+    text-align: center;
+}
+
 .start-meeting-btn {
     padding: 0.6rem 1rem;
     border: none;

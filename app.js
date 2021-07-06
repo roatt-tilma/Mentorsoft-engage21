@@ -26,7 +26,7 @@ app.use('/guest', (req, res) => {
 
 // invalid route
 app.use((req, res) => {
-    res.status(404).render('404', { title: 'ERROR' });
+    res.render('index', { title: 'HOME' });
 })
 
 

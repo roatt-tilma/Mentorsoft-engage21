@@ -45,16 +45,19 @@ const password_copy = document.getElementById('password-copy');
 
 
 const full_overlay = document.getElementById('full-overlay');
+const full_overlay_text = document.getElementById('full-overlay-text');
 
 async function init() {
 
     if(USER_TYPE === 'Guest'){
         add_guest_name_to_info();
-        full_overlay.innerHTML = 'Waiting for host to start ...';
+        full_overlay_text.innerHTML = 'Waiting for host to start ...';
     }
 
     if(USER_TYPE === 'Host'){
-        full_overlay.innerHTML = 'Waiting for someone to join ...';
+        full_overlay_text.innerHTML = 'Waiting for someone to join...<br><br>You can start chatting as soon as someone joins!';
+        msg_data.disabled = true;
+        msg_send.disabled = true;
     }
 
     socket.emit('join-room', {
@@ -78,6 +81,9 @@ socket.on('join-room', async (roomDet) => {
     dataChannel.onmessage = (e) => {
         display_msg(GUEST_NAME, e.data);
     };
+    
+    msg_data.disabled = false;
+    msg_send.disabled = false;
     
     msg_data.addEventListener('keyup', (e) => {
         if(e.key === 'Enter'){
@@ -279,6 +285,7 @@ end_call_btn.onclick = () => {
     socket.emit('end-call', {
         roomId: ROOM_ID
     });
+
     stream.getTracks().forEach(track => track.stop());
 
     if (screen){
