@@ -207,7 +207,7 @@ audio_btn.onclick = () => {
     audio_bool = !audio_bool;
     stream.getAudioTracks()[0].enabled = audio_bool;
     console.log(audio_track);
-    if(audio_track) audio_track.enabled = audio_bool;
+    if(audio_track !== null) audio_track.enabled = audio_bool;
     audio_icon.classList.toggle('fa');
     audio_icon.classList.toggle('fa-microphone');
     audio_icon.classList.toggle('fas');
@@ -296,11 +296,11 @@ end_call_btn.onclick = () => {
 socket.on('end-call', () => {
     stream.getTracks().forEach(track => track.stop());
     
-    if (screen){
+    if (screen !== null){
         screen.getTracks().forEach(track => track.stop());
     }
 
-    if (audio_track){
+    if (audio_track !== null){
         audio_track.stop();
     }
 
