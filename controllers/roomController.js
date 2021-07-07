@@ -63,26 +63,35 @@ const connect_guest = (req, res) => {
     const roomId = req.body.roomId;
 
     const roomDet = roomDetails.get(roomId);
-    const roomPassword = roomDet.room.password;
+    if (roomDet){
 
-    const guestId = randomId();
-    let guestName = req.body.guestName;
-
-    const userType = 'Guest';
-
-    if (!guestName) guestName = 'Guest';
-
-    if (givenPassword === roomPassword && roomDet.isFull === 0){
-        roomDet.guest.name = guestName;
-        roomDet.guest.id = guestId;
-        roomDet.isFull = 1;
-        res.render('room', { title: roomId, roomDet, userType});
+        const roomPassword = roomDet.room.password;
+        
+        const guestId = randomId();
+        let guestName = req.body.guestName;
+        
+        const userType = 'Guest';
+        
+        if (!guestName) guestName = 'Guest';
+        
+        if (givenPassword === roomPassword && roomDet.isFull === 0){
+            roomDet.guest.name = guestName;
+            roomDet.guest.id = guestId;
+            roomDet.isFull = 1;
+            res.render('room', { title: roomId, roomDet, userType});
+        }
+        
+        else if(givenPassword !== roomPassword){
+            res.render('joinroomform', { title: 'Guest', error:'passwordWrong' });
+        }
+        
+        else{
+            res.render('joinroomform', { title: 'Guest', error:'roomFull' });
+        }
+        
+    }else{
+        res.render('joinroomform', { title: 'Guest', error:'wrongRoomId' });
     }
-
-    else{
-        res.render('404', { title: '404' });
-    }
-
 }
 
 

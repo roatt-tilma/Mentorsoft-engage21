@@ -158,6 +158,14 @@ body{
 
 }
 
+/* errors in joinroom form */
+
+.joinRoomError {
+    color: red;
+    font-weight: 900;
+    font-size: 0.7rem;
+}
+
 @media (max-width: 390px) {
     .content-margin-auto{
         margin: auto;

@@ -317,7 +317,7 @@ body{
     letter-spacing: 0.05rem;
 }
 
-.full-overlay span{
+.full-overlay span {
     letter-spacing: 0.05rem;
     text-align: center;
 }
@@ -325,23 +325,29 @@ body{
 .leave-room-btn,
 .end-room-btn,
 .start-meeting-btn {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
     padding: 0.6rem 1rem;
+    letter-spacing: 0.05rem;
     border: none;
     border-radius: 100px;
-    width: 120px;
+    width: 150px;
+    height: 50px;
     background: #4548F4;
     color: #fff;
     box-shadow: 0 3px 20px rgb(0 0 0 / 20%);
     cursor: pointer;
+    left: calc(50% - 75px);
 }
 
 .leave-room-btn,
 .end-room-btn{
     position: absolute;
     bottom: 25px;
-    left: calc(50% - 60px);
     background: #E33A6D;
 }
+
 
 /* Media queries  */
 @media (max-width: 480px){

@@ -21,7 +21,7 @@ app.use('/host', (req, res) => {
 });
 
 app.use('/guest', (req, res) => {
-    res.render('joinroomform', { title: 'Guest' });
+    res.render('joinroomform', { title: 'Guest', error: 'none' });
 });
 
 // invalid route
