@@ -716,8 +716,7 @@ const show_full_overlay_content_for_host = (information) => {
     const end_room_btn = document.getElementById('end-room-btn');
     end_room_btn.onclick = () => {
         var peer = get_relevant_peer();
-
-        peer.close();
+        if(peer) peer.close();
         socket.emit('room-ended', {
             roomId: ROOM_ID
         });
