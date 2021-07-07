@@ -85,7 +85,10 @@ socket.on('join-room', async (roomDet) => {
     add_guest_name_to_info();
 
     dataChannel = peerHost.createDataChannel(GUEST_ID);
-    dataChannel.onopen = () => console.log('connection open in Host Side');
+    dataChannel.onopen = () => {
+        console.log('connection open in Host Side');
+        enable_chat();
+    }
     dataChannel.onmessage = (e) => {
         display_msg(GUEST_NAME, e.data);
     };
@@ -111,7 +114,6 @@ socket.on('join-room', async (roomDet) => {
     const information = '<button id="start-meeting-btn" class="start-meeting-btn">Start Meeting</button>';
 
     show_full_overlay_content_for_host(information);
-    enable_chat();
 
     const start_meeting_btn = document.getElementById('start-meeting-btn');
 
@@ -668,7 +670,7 @@ const copy_helper = async (icon, copy_text) => {
 
 const show_full_overlay_content_for_guest = (information) => {
   
-    full_overlay_content.innerHTML = `${information}<br><br>Leave Room button will end the room for both!
+    full_overlay_content.innerHTML = `${information}<br><br>Leave Room button will end the room!
                                         <button id="leave-room-btn" class="leave-room-btn">Leave Room</button>`;
 
     const leave_room_btn = document.getElementById('leave-room-btn');
@@ -688,7 +690,7 @@ const show_full_overlay_content_for_guest = (information) => {
 
 const show_full_overlay_content_for_host = (information) => {
         
-    full_overlay_content.innerHTML = `${information}<br><br>End Room button will end the room for both participants!<button id="end-room-btn" class="end-room-btn">End Room</button>`;
+    full_overlay_content.innerHTML = `${information}<button id="end-room-btn" class="end-room-btn">End Room</button>`;
 
     const end_room_btn = document.getElementById('end-room-btn');
     end_room_btn.onclick = () => {
