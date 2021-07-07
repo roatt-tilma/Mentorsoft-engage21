@@ -642,7 +642,6 @@ const ask_for_user_media = async () => {
 
 }
 
-// display message in the ui
 
 const display_msg = (sender, message) => {
     const chat_div = document.createElement('div');

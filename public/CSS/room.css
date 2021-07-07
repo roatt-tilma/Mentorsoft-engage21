@@ -349,15 +349,8 @@ body{
 }
 
 
-/* Media queries  */
-@media (max-width: 480px){
-    .chat-window {
-        display: none;
-        width: 100%;
-    }
-}
 
-/* Strict  */
+
 .chat-show {
     display: flex;
     margin-right: 0;
@@ -365,4 +358,13 @@ body{
 
 .hide-full-overlay{
     display: none;
+}
+
+
+/* Media queries  */
+@media (max-width: 480px){
+    .chat-window {
+        display: none;
+        width: 100%;
+    }
 }
