@@ -51,6 +51,8 @@ const password_copy = document.getElementById('password-copy');
 const full_overlay = document.getElementById('full-overlay');
 const full_overlay_content = document.getElementById('full-overlay-content');
 
+const other_video_container = document.getElementById('other-video-container');
+
 async function init() {
 
     if(USER_TYPE === 'Guest'){
@@ -118,17 +120,21 @@ socket.on('join-room', async (roomDet) => {
     const start_meeting_btn = document.getElementById('start-meeting-btn');
 
     start_meeting_btn.onclick = async () => {
-        start_meeting_btn.disabled = true;
-        await ask_for_user_media();
-        full_overlay.classList.add('hide-full-overlay');
-        stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
-        otherUsername.innerText = GUEST_NAME;
-        
-        socket.emit('meeting-started', {
-            roomId: ROOM_ID,
-            video_bool
-        });
-        disable_screen_share(); 
+        try{
+            await ask_for_user_media();
+            start_meeting_btn.disabled = true;
+            full_overlay.classList.add('hide-full-overlay');
+            stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
+            otherUsername.innerText = GUEST_NAME;
+            
+            socket.emit('meeting-started', {
+                roomId: ROOM_ID,
+                video_bool
+            });
+            disable_screen_share(); 
+        }catch(e){
+            alert('Allow us to use your camera and microphone to continue!!');
+        }
     }
 
 });
@@ -171,14 +177,17 @@ socket.on('candidate', (candidate) => {
 });
 
 socket.on('meeting-started', async () => {
-
-    var peer = get_relevant_peer();
-
-    disable_screen_share();
-    otherUsername.innerText = HOST_NAME;
-    await ask_for_user_media();
-    full_overlay.classList.add('hide-full-overlay');
-    stream.getTracks().forEach(track => peer.addTrack(track, stream));
+    try{
+        var peer = get_relevant_peer();
+        
+        disable_screen_share();
+        otherUsername.innerText = HOST_NAME;
+        await ask_for_user_media();
+        full_overlay.classList.add('hide-full-overlay');
+        stream.getTracks().forEach(track => peer.addTrack(track, stream));
+    }catch(e){
+        alert('Allow us to use your camera and microphone to continue!!');
+    }
 });
 
 
@@ -380,50 +389,55 @@ var audio_track = null;
 var screen = null;
 
 screen_share_btn.onclick = async () => {
+
+    try{
+        var peer = get_relevant_peer();
+
+        screen = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+                cursor: 'always'
+            },
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
+        });
     
-    var peer = get_relevant_peer();
+        const userTrack = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                sampleRate: 44100
+            }
+        });
 
-    screen = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-            cursor: 'always'
-        },
-        audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            sampleRate: 44100
-        }
-    });
-    
-    const userTrack = await navigator.mediaDevices.getUserMedia({
-        audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            sampleRate: 44100
-        }
-    });
+        if (screen.getTracks()){
 
-    audio_track = userTrack.getAudioTracks()[0];
-    audio_track.enabled = audio_bool;
+            audio_track = userTrack.getAudioTracks()[0];
+            audio_track.enabled = audio_bool;
 
-    if (screen.getTracks()){
+            screen.getVideoTracks()[0].onended = () => {
+                socket.emit('display-stream-ended', {
+                    roomId: ROOM_ID
+                });
+                share_bool = false;
+                if(video_bool) enable_screen_share();
+                audio_track = null;
+                screen = null;
+            };
 
-        screen.getVideoTracks()[0].onended = () => {
-            socket.emit('display-stream-ended', {
-                roomId: ROOM_ID
-            });
-            share_bool = false;
-            if(video_bool) enable_screen_share();
-            audio_track = null;
-            screen = null;
-        };
+            disable_screen_share();
+            share_bool = true;
+        
+            screen.getTracks().forEach(track => peer.addTrack(track, screen));
+            peer.addTrack(audio_track, screen);
 
-        disable_screen_share();
-        share_bool = true;
-    
-        screen.getTracks().forEach(track => peer.addTrack(track, screen));
-        peer.addTrack(audio_track, screen);
+        } 
+    }catch(e){
+        console.log(e);
+    }
 
-    } 
 }
 
 
@@ -433,6 +447,12 @@ socket.on('display-stream-ended', () => {
     otherVideo.srcObject = receivedStream;
 });
 
+
+//double click to toggle full screen mode
+
+document.ondblclick = () => {
+    toggle_fullscreen();
+}
 
 //hide or show user's video
 
@@ -602,6 +622,7 @@ const enable_chat = () => {
 }
 
 const ask_for_user_media = async () => {
+
     stream = await navigator.mediaDevices.getUserMedia({
         video: {
             cursor: 'always'
@@ -612,10 +633,10 @@ const ask_for_user_media = async () => {
             sampleRate: 44100
         }
     });
-
+    
     stream.getVideoTracks()[0].enabled = video_bool;
     stream.getAudioTracks()[0].enabled = audio_bool;
-
+    
     myVideo.srcObject = stream;
     myVideo.muted = true; 
 
@@ -708,4 +729,19 @@ const show_full_overlay_content_for_host = (information) => {
 const get_relevant_peer = () => {
     if (USER_TYPE === 'Host') return peerHost;
     return peerGuest;
+}
+
+const get_fullscreen_element = () => {
+    return document.fullscreenElement
+        || document.webkitFullscreenElement
+        || document.mozFullscreenElement
+        || document.msFullscreenElement
+}
+
+const toggle_fullscreen = () => {
+    if(get_fullscreen_element()){
+        document.exitFullscreen();
+    }else {
+        document.documentElement.requestFullscreen().catch(console.log);       
+    }
 }
