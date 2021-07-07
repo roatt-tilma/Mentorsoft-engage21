@@ -5,9 +5,13 @@ window.onload = () => {
 }
 
 var stream;
+var peerGuest = null;
+var peerHost = null;
 var dataChannel;
 
-const peer = createPeer();
+var receivedStreamCount = 0;
+var receivedStream;
+
 
 const myVideo = document.getElementById('my-video');
 const otherVideo = document.getElementById('other-video');
@@ -45,19 +49,21 @@ const password_copy = document.getElementById('password-copy');
 
 
 const full_overlay = document.getElementById('full-overlay');
-const full_overlay_text = document.getElementById('full-overlay-text');
+const full_overlay_content = document.getElementById('full-overlay-content');
 
 async function init() {
 
     if(USER_TYPE === 'Guest'){
+        if (peerGuest === null) peerGuest = createPeer();
         add_guest_name_to_info();
-        full_overlay_text.innerHTML = 'Waiting for host to start ...';
+        const information = 'Waiting for host to start...';
+        show_full_overlay_content_for_guest(information);
     }
 
     if(USER_TYPE === 'Host'){
-        full_overlay_text.innerHTML = 'Waiting for someone to join...<br><br>You can start chatting as soon as someone joins!';
-        msg_data.disabled = true;
-        msg_send.disabled = true;
+        const information = 'Waiting for someone to join...<br><br>You can start chatting as soon as someone joins!';
+        show_full_overlay_content_for_host(information);
+        disable_chat();
     }
 
     socket.emit('join-room', {
@@ -71,20 +77,19 @@ async function init() {
 
 socket.on('join-room', async (roomDet) => {
 
+    if (peerHost === null) peerHost =  createPeer();
+
     GUEST_ID = roomDet.guest.id;
     GUEST_NAME = roomDet.guest.name;
 
     add_guest_name_to_info();
 
-    dataChannel = peer.createDataChannel('data_channel_webRTC');
+    dataChannel = peerHost.createDataChannel(GUEST_ID);
     dataChannel.onopen = () => console.log('connection open in Host Side');
     dataChannel.onmessage = (e) => {
         display_msg(GUEST_NAME, e.data);
     };
-    
-    msg_data.disabled = false;
-    msg_send.disabled = false;
-    
+
     msg_data.addEventListener('keyup', (e) => {
         if(e.key === 'Enter'){
             e.preventDefault();
@@ -98,11 +103,15 @@ socket.on('join-room', async (roomDet) => {
     msg_send.onclick = () => {
         const msg = display_my_message();
         if(msg !== '') {
+            console.log(dataChannel.readyState);
             dataChannel.send(msg);
         }
     }
 
-    full_overlay.innerHTML = '<button id="start-meeting-btn" class="start-meeting-btn">Start Room</button>';
+    const information = '<button id="start-meeting-btn" class="start-meeting-btn">Start Meeting</button>';
+
+    show_full_overlay_content_for_host(information);
+    enable_chat();
 
     const start_meeting_btn = document.getElementById('start-meeting-btn');
 
@@ -110,7 +119,7 @@ socket.on('join-room', async (roomDet) => {
         start_meeting_btn.disabled = true;
         await ask_for_user_media();
         full_overlay.classList.add('hide-full-overlay');
-        stream.getTracks().forEach(track => peer.addTrack(track, stream));
+        stream.getTracks().forEach(track => peerHost.addTrack(track, stream));
         otherUsername.innerText = GUEST_NAME;
         
         socket.emit('meeting-started', {
@@ -123,6 +132,8 @@ socket.on('join-room', async (roomDet) => {
 });
 
 socket.on('offer', async (offer) => {
+
+    var peer = get_relevant_peer() ;
 
     offer = new RTCSessionDescription(offer);
 
@@ -141,6 +152,8 @@ socket.on('offer', async (offer) => {
 
 
 socket.on('answer', (answer) => {
+    var peer = get_relevant_peer();
+
     answer = new RTCSessionDescription(answer);
     peer.setRemoteDescription(answer).catch(e => console.log(e));
     can_call_addIceCandidate = 1;
@@ -148,11 +161,17 @@ socket.on('answer', (answer) => {
 
 
 socket.on('candidate', (candidate) => {
+
+    var peer = get_relevant_peer();
+
     candidate = new RTCIceCandidate(candidate);
     peer.addIceCandidate(candidate);
 });
 
 socket.on('meeting-started', async () => {
+
+    var peer = get_relevant_peer();
+
     disable_screen_share();
     otherUsername.innerText = HOST_NAME;
     await ask_for_user_media();
@@ -276,13 +295,9 @@ password_copy.onclick = () => {
     copy_helper(password_copy, ROOM_PASSWORD);
 }
 
-const aftercall_overlay = () => {
-    full_overlay.innerHTML = 'The meeting has ended!';
-    full_overlay.classList.remove('hide-full-overlay');
-}
 
 end_call_btn.onclick = () => {
-    socket.emit('end-call', {
+    socket.emit('meeting-ended', {
         roomId: ROOM_ID
     });
 
@@ -296,11 +311,17 @@ end_call_btn.onclick = () => {
         audio_track.stop();
     }
 
-    aftercall_overlay();
+    const information = 'The meeting has ended!';
+
+    if(USER_TYPE === 'Host') show_full_overlay_content_for_host(information);
+    else show_full_overlay_content_for_guest(information);
+    
+
+    full_overlay.classList.remove('hide-full-overlay');
 };
 
 
-socket.on('end-call', () => {
+socket.on('meeting-ended', () => {
     stream.getTracks().forEach(track => track.stop());
     
     if (screen !== null){
@@ -311,7 +332,33 @@ socket.on('end-call', () => {
         audio_track.stop();
     }
 
-    aftercall_overlay();
+    const information = 'The meeting has ended!';
+
+    if(USER_TYPE === 'Host') show_full_overlay_content_for_host(information);
+    else show_full_overlay_content_for_guest(information);
+
+    full_overlay.classList.remove('hide-full-overlay');
+});
+
+socket.on('room-left', () => {
+    var peer = get_relevant_peer();
+    dataChannel.close();
+    peer.close();
+    remove_guest_name_from_info();
+    alert(`${GUEST_NAME} has left the room! Redirecting to homepage...`);
+    // const information = 'Waiting for someone to join...<br><br>You can start chatting as soon as someone joins!';
+    // show_full_overlay_content_for_host(information);
+    // disable_chat();
+    window.location.href = '/';
+});
+
+socket.on('room-ended', () => {
+    
+    var peer = get_relevant_peer();
+
+    peer.close();
+    alert(`${HOST_NAME} has ended the room! Redirecting to homepage...`);
+    window.location.href = '/';
 });
 
 
@@ -322,48 +369,50 @@ var audio_track = null;
 var screen = null;
 
 screen_share_btn.onclick = async () => {
-        
-        screen = await navigator.mediaDevices.getDisplayMedia({
-            video: {
-                cursor: 'always'
-            },
-            audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                sampleRate: 44100
-            }
-        });
-        
-        const userTrack = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                sampleRate: 44100
-            }
-        });
-
-        audio_track = userTrack.getAudioTracks()[0];
-        audio_track.enabled = audio_bool;
-
-        if (screen.getTracks()){
-
-            screen.getVideoTracks()[0].onended = () => {
-                socket.emit('display-stream-ended', {
-                    roomId: ROOM_ID
-                });
-                share_bool = false;
-                if(video_bool) enable_screen_share();
-                audio_track = null;
-                screen = null;
-            };
     
-            disable_screen_share();
-            share_bool = true;
-     
-            screen.getTracks().forEach(track => peer.addTrack(track, screen));
-            peer.addTrack(audio_track, screen);
+    var peer = get_relevant_peer();
 
-        } 
+    screen = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+            cursor: 'always'
+        },
+        audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            sampleRate: 44100
+        }
+    });
+    
+    const userTrack = await navigator.mediaDevices.getUserMedia({
+        audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            sampleRate: 44100
+        }
+    });
+
+    audio_track = userTrack.getAudioTracks()[0];
+    audio_track.enabled = audio_bool;
+
+    if (screen.getTracks()){
+
+        screen.getVideoTracks()[0].onended = () => {
+            socket.emit('display-stream-ended', {
+                roomId: ROOM_ID
+            });
+            share_bool = false;
+            if(video_bool) enable_screen_share();
+            audio_track = null;
+            screen = null;
+        };
+
+        disable_screen_share();
+        share_bool = true;
+    
+        screen.getTracks().forEach(track => peer.addTrack(track, screen));
+        peer.addTrack(audio_track, screen);
+
+    } 
 }
 
 
@@ -388,209 +437,133 @@ hide_show.onclick = () => {
 
 function createPeer(){
 
-    return new RTCPeerConnection({
+    const peer = new RTCPeerConnection({
         iceServers: [
             {
                 urls: 'turn:numb.viagenie.ca',
                 credential: 'I1server',
                 username: 'roarout20@gmail.com',
             },
-            {urls:'stun:stun01.sipphone.com'},
-            {urls:'stun:stun.ekiga.net'},
-            {urls:'stun:stun.fwdnet.net'},
-            {urls:'stun:stun.ideasip.com'},
-            {urls:'stun:stun.iptel.org'},
-            {urls:'stun:stun.rixtelecom.se'},
-            {urls:'stun:stun.schlund.de'},
             {urls:'stun:stun.l.google.com:19302'},
-            {urls:'stun:stun1.l.google.com:19302'},
-            {urls:'stun:stun2.l.google.com:19302'},
-            {urls:'stun:stun3.l.google.com:19302'},
-            {urls:'stun:stun4.l.google.com:19302'},
             {urls:'stun:stunserver.org'},
-            {urls:'stun:stun.softjoys.com'},
-            {urls:'stun:stun.voiparound.com'},
-            {urls:'stun:stun.voipbuster.com'},
-            {urls:'stun:stun.voipstunt.com'},
-            {urls:'stun:stun.voxgratia.org'},
-            {urls:'stun:stun.xten.com'},
         ]
     });
 
-}
-
-peer.onnegotiationneeded = async () => {
-
-    can_call_addIceCandidate = 0;
-
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
+    peer.onnegotiationneeded = async () => {
     
-    const payload = {
-        sdp: peer.localDescription,
-        roomId: ROOM_ID
-    }
-
-    socket.emit('offer', payload);
-}
-
-peer.onconnectionstatechange = (e) => {
-    switch (peer.connectionState){
-        case 'connected':
-            console.log('connection state: connected');
-            break;
-        case 'disconnected':
-
-            console.log('conneciton state: disconnected');
-
-            break;
-        case 'closed':
-            console.log('connection state: closed');
-            break;
-        case 'connecting':
-            console.log('connection state: connecting');
-            break;
-        case 'failed':
-            console.log('connection state: failed');
-            break;
-        case 'new':
-            console.log('connection state: new');
-            break;
-    }
-}
-
-
-// handle when new stream is sent
-
-var count = 0;
-var receivedStream;
-
-peer.ontrack = async (e) => {
-
-    count++;
-    if (count === 2){
-        receivedStream = e.streams[0];
-    }
-
-    otherVideo.srcObject = e.streams[0];
-
-}
-
-
-//function used in logic to find if the NAT is symmetric
-
-const parseCandidate = (line) => {
-    var parts;
-    // Parse both variants.
-    if (line.indexOf('a=candidate:') === 0) {
-      parts = line.substring(12).split(' ');
-    } else {
-      parts = line.substring(10).split(' ');
-    }
-  
-    var candidate = {
-      foundation: parts[0],
-      component: parts[1],
-      protocol: parts[2].toLowerCase(),
-      priority: parseInt(parts[3], 10),
-      ip: parts[4],
-      port: parseInt(parts[5], 10),
-      // skip parts[6] == 'typ'
-      type: parts[7]
-    };
-  
-    for (var i = 8; i < parts.length; i += 2) {
-      switch (parts[i]) {
-        case 'raddr':
-          candidate.relatedAddress = parts[i + 1];
-          break;
-        case 'rport':
-          candidate.relatedPort = parseInt(parts[i + 1], 10);
-          break;
-        case 'tcptype':
-          candidate.tcpType = parts[i + 1];
-          break;
-        default: // Unknown extensions are silently ignored.
-          break;
-      }
-    }
-    return candidate;
-  }
-
-
-
-var candidates = {};
-peer.onicecandidate = (e) => {
-
-    //logic to find if the NAT is symmetric
-    if (e.candidate && e.candidate.candidate.indexOf('srflx') !== -1) {
-        var cand = parseCandidate(e.candidate.candidate);
-        if (!candidates[cand.relatedPort]) candidates[cand.relatedPort] = [];
-        candidates[cand.relatedPort].push(cand.port);
-      } else if (!e.candidate) {
-        if (Object.keys(candidates).length === 1) {
-          var ports = candidates[Object.keys(candidates)[0]];
-          console.log(ports.length === 1 ? 'normal nat' : 'symmetric nat');
+        can_call_addIceCandidate = 0;
+    
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        
+        const payload = {
+            sdp: peer.localDescription,
+            roomId: ROOM_ID
         }
-      }
+    
+        socket.emit('offer', payload);
+    }
 
-
-    const payload = {
-        candidate: e.candidate,
-        roomId: ROOM_ID
+    peer.onconnectionstatechange = (e) => {
+        switch (peer.connectionState){
+            case 'connected':
+                console.log('connection state: connected');
+                break;
+            case 'disconnected':
+    
+                console.log('conneciton state: disconnected');
+    
+                break;
+            case 'closed':
+                console.log('connection state: closed');
+                break;
+            case 'connecting':
+                console.log('connection state: connecting');
+                break;
+            case 'failed':
+                console.log('connection state: failed');
+                break;
+            case 'new':
+                console.log('connection state: new');
+                break;
+        }
     }
 
     
-    if (e.candidate && can_call_addIceCandidate === 1){
-        peer.addIceCandidate(new RTCIceCandidate(e.candidate));
+    peer.ontrack = async (e) => {
+
+        receivedStreamCount++;
+        if (receivedStreamCount === 2){
+            receivedStream = e.streams[0];
+        }
+    
+        otherVideo.srcObject = e.streams[0];
+    
     }
 
-    if (e.candidate){
-        socket.emit('candidate', payload);
+    peer.onicecandidate = (e) => {
+
+        const payload = {
+            candidate: e.candidate,
+            roomId: ROOM_ID
+        }
+    
+        
+        if (e.candidate && can_call_addIceCandidate === 1){
+            peer.addIceCandidate(new RTCIceCandidate(e.candidate));
+        }
+    
+        if (e.candidate){
+            socket.emit('candidate', payload);
+        }
+    
     }
 
-}
+    //when new data channel is created - code used only by guest
+    peer.ondatachannel = (e) => {
+        console.log('in on data channel!!');
+        console.log(e.channel);
+        peer.dc = e.channel;
+        peer.dc.onopen = () => console.log('connection open in Guest Side');
+        peer.dc.onmessage = (event) =>  {
+            display_msg(HOST_NAME, event.data);
+        }
 
-//when new data channel is created - code used only by guest
-peer.ondatachannel = e => {
-    peer.dc = e.channel;
-    peer.dc.onopen = () => console.log('connection open in Guest Side');
-    peer.dc.onmessage = (event) =>  {
-        display_msg(HOST_NAME, event.data);
-    }
+        msg_data.addEventListener('keyup', (event) => {
+            if(event.key === 'Enter'){
+                event.preventDefault();
+                const msg = display_my_message();
+                if(msg !== '') {
+                    peer.dc.send(msg);
+                }
+            }
+        });
 
-    msg_data.addEventListener('keyup', (event) => {
-        if(event.key === 'Enter'){
-            event.preventDefault();
+        msg_send.onclick = () => {
             const msg = display_my_message();
             if(msg !== '') {
                 peer.dc.send(msg);
             }
         }
+    }
+
+    peer.addEventListener('icegatheringstatechange', (e) => {
+        switch(peer.iceGatheringState) {
+            case 'new':
+              console.log('iceGatheringState: new');
+              break;
+            case 'gathering':
+              console.log('iceGatheringState: gathering');
+              break;
+            case 'complete':
+              console.log('iceGatheringState: complete');
+              break;
+        }
     });
 
-    msg_send.onclick = () => {
-        const msg = display_my_message();
-        if(msg !== '') {
-            peer.dc.send(msg);
-        }
-    }
+    return peer;
+
 }
-
-peer.addEventListener('icegatheringstatechange', (e) => {
-    switch(peer.iceGatheringState) {
-        case 'new':
-          console.log('iceGatheringState: new');
-          break;
-        case 'gathering':
-          console.log('iceGatheringState: gathering');
-          break;
-        case 'complete':
-          console.log('iceGatheringState: complete');
-          break;
-    }
-});
-
 
 
 //user defined functions
@@ -605,6 +578,16 @@ const enable_screen_share = () => {
     screen_share_btn.disabled = false;
     screen_share_btn.style.backgroundColor = '#4548f4';
     screen_share_btn.style.cursor = 'pointer';
+}
+
+const disable_chat = () => {
+    msg_data.disabled = true;
+    msg_send.disabled = true;
+}
+
+const enable_chat = () => {
+    msg_data.disabled = false;
+    msg_send.disabled = false;
 }
 
 const ask_for_user_media = async () => {
@@ -655,6 +638,11 @@ const add_guest_name_to_info = () => {
     info_list.appendChild(guestName);
 }
 
+const remove_guest_name_from_info = () => {
+    const guestName = info_list.lastElementChild;
+    info_list.removeChild(guestName);
+}
+
 const copy_helper = async (icon, copy_text) => {
     try {
         await navigator.clipboard.writeText(copy_text);
@@ -667,4 +655,45 @@ const copy_helper = async (icon, copy_text) => {
     }catch(e){
         console.log(e);
     }
+}
+
+const show_full_overlay_content_for_guest = (information) => {
+  
+    full_overlay_content.innerHTML = `${information}<button id="leave-room-btn" class="leave-room-btn">Leave Room</button>`;
+
+    const leave_room_btn = document.getElementById('leave-room-btn');
+
+    leave_room_btn.onclick = () => {
+        var peer = get_relevant_peer();
+        peer.dc.close();
+        peer.close();
+        socket.emit('room-left', {
+            roomId: ROOM_ID
+        });
+        window.location.href = '/';
+    } 
+
+}
+
+
+const show_full_overlay_content_for_host = (information) => {
+        
+    full_overlay_content.innerHTML = `${information}<button id="end-room-btn" class="end-room-btn">End Room</button>`;
+
+    const end_room_btn = document.getElementById('end-room-btn');
+    end_room_btn.onclick = () => {
+        var peer = get_relevant_peer();
+
+        peer.close();
+        socket.emit('room-ended', {
+            roomId: ROOM_ID
+        });
+        window.location.href = '/';
+    }
+
+}
+
+const get_relevant_peer = () => {
+    if (USER_TYPE === 'Host') return peerHost;
+    return peerGuest;
 }

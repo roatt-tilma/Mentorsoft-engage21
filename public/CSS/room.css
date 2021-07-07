@@ -315,13 +315,25 @@ body{
     text-align: center;
 }
 
+.leave-room-btn,
+.end-room-btn,
 .start-meeting-btn {
     padding: 0.6rem 1rem;
     border: none;
     border-radius: 100px;
-    background: #fff;
+    width: 120px;
+    background: #4548F4;
+    color: #fff;
     box-shadow: 0 3px 20px rgb(0 0 0 / 20%);
     cursor: pointer;
+}
+
+.leave-room-btn,
+.end-room-btn{
+    position: absolute;
+    bottom: 25px;
+    left: calc(50% - 60px);
+    background: #E33A6D;
 }
 
 /* Media queries  */

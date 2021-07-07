@@ -108,11 +108,6 @@ io.on('connection', socket => {
     socket.on('candidate', (data) => {
         socket.broadcast.to(data.roomId).emit('candidate', data.candidate);
     });
-    
-    socket.on('end-call', (data) => {
-        roomDetails.delete(data.roomId);
-        socket.broadcast.to(data.roomId).emit('end-call');
-    });
 
     socket.on('display-stream-ended', (data) => {
         socket.broadcast.to(data.roomId).emit('display-stream-ended');
@@ -124,8 +119,25 @@ io.on('connection', socket => {
 
     socket.on('meeting-started', (data) => {
         socket.broadcast.to(data.roomId).emit('meeting-started');
-    })
+    });
 
+    socket.on('meeting-ended', (data) => {
+        socket.broadcast.to(data.roomId).emit('meeting-ended');
+    });
+
+    socket.on('room-ended', (data) => {
+        roomDetails.delete(data.roomId);
+        socket.broadcast.to(data.roomId).emit('room-ended');
+    });
+
+    socket.on('room-left', (data) => {
+        const roomDet = roomDetails.get(data.roomId);
+        roomDet.guest.id = null;
+        roomDet.guest.name = null;
+        roomDet.isFull = 0;
+        socket.broadcast.to(data.roomId).emit('room-left');
+        socket.leave(data.roomId);
+    });
 });
 
 
