@@ -7,8 +7,8 @@ html {
 body{
     margin: 0;
     padding: 0;
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
     overflow-x: hidden;
     font-family: 'Work Sans', sans-serif;
 }
@@ -16,8 +16,8 @@ body{
 .container-flex {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
     overflow-x: hidden;
 }
 
