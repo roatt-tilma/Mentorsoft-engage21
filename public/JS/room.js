@@ -311,11 +311,16 @@ end_call_btn.onclick = () => {
         audio_track.stop();
     }
 
-    const information = 'The meeting has ended!';
-
-    if(USER_TYPE === 'Host') show_full_overlay_content_for_host(information);
-    else show_full_overlay_content_for_guest(information);
     
+
+    if(USER_TYPE === 'Host'){
+        const information = 'The meeting has ended!';
+        show_full_overlay_content_for_host(information);
+    } 
+    else{
+        const information = 'The meeting has ended!';
+        show_full_overlay_content_for_guest(information);
+    }
 
     full_overlay.classList.remove('hide-full-overlay');
 };
@@ -332,10 +337,14 @@ socket.on('meeting-ended', () => {
         audio_track.stop();
     }
 
-    const information = 'The meeting has ended!';
-
-    if(USER_TYPE === 'Host') show_full_overlay_content_for_host(information);
-    else show_full_overlay_content_for_guest(information);
+    if(USER_TYPE === 'Host'){
+        const information = 'The meeting has ended!';
+        show_full_overlay_content_for_host(information);
+    } 
+    else{
+        const information = 'The meeting has ended!';
+        show_full_overlay_content_for_guest(information);
+    }
 
     full_overlay.classList.remove('hide-full-overlay');
 });
@@ -659,7 +668,8 @@ const copy_helper = async (icon, copy_text) => {
 
 const show_full_overlay_content_for_guest = (information) => {
   
-    full_overlay_content.innerHTML = `${information}<button id="leave-room-btn" class="leave-room-btn">Leave Room</button>`;
+    full_overlay_content.innerHTML = `${information}<br><br>Leave Room button will end the room for both!
+                                        <button id="leave-room-btn" class="leave-room-btn">Leave Room</button>`;
 
     const leave_room_btn = document.getElementById('leave-room-btn');
 
@@ -678,7 +688,7 @@ const show_full_overlay_content_for_guest = (information) => {
 
 const show_full_overlay_content_for_host = (information) => {
         
-    full_overlay_content.innerHTML = `${information}<button id="end-room-btn" class="end-room-btn">End Room</button>`;
+    full_overlay_content.innerHTML = `${information}<br><br>End Room button will end the room for both participants!<button id="end-room-btn" class="end-room-btn">End Room</button>`;
 
     const end_room_btn = document.getElementById('end-room-btn');
     end_room_btn.onclick = () => {
