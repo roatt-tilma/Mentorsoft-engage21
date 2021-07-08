@@ -59,6 +59,7 @@ async function init() {
     if(USER_TYPE === 'Guest'){
         if (peerGuest === null) peerGuest = createPeer();
         add_guest_name_to_info();
+        add_new_message_notification_content();
         const information = 'Waiting for host to start...';
         show_full_overlay_content_for_guest(information);
     }
@@ -86,6 +87,7 @@ socket.on('join-room', async (roomDet) => {
     GUEST_NAME = roomDet.guest.name;
 
     add_guest_name_to_info();
+    add_new_message_notification_content();
 
     dataChannel = peerHost.createDataChannel(GUEST_ID);
     dataChannel.onopen = () => {
@@ -691,6 +693,15 @@ const add_guest_name_to_info = () => {
     guestName.classList.add('info-list-elements');
     guestName.appendChild(document.createTextNode('Guest Name: ' + GUEST_NAME));
     info_list.appendChild(guestName);
+}
+
+const add_new_message_notification_content = () => {
+    if (USER_TYPE === 'Host'){
+        new_message_notification.innerHTML = `New Message from ${GUEST_NAME}!`;
+    }else{
+        new_message_notification.innerHTML = `New Message from ${HOST_NAME}!`;
+    }
+     
 }
 
 const remove_guest_name_from_info = () => {
