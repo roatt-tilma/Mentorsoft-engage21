@@ -30,7 +30,7 @@ const create_room = (req, res) => {
     const userType = 'Host';
 
     if (!hostName) hostName = 'Host';
-    if (!roomName) roomName = `${hostName}'s Room`;
+    if (!roomName) roomName = `Meeting Room`;
     if (!roomPassword) roomPassword = randomPassword();
 
 
