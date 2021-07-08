@@ -144,13 +144,8 @@ io.on('connection', socket => {
     });
 
     socket.on('room-left', (data) => {
-        // const roomDet = roomDetails.get(data.roomId);
-        // roomDet.guest.id = null;
-        // roomDet.guest.name = null;
-        // roomDet.isFull = 0;
         roomDetails.delete(data.roomId);
         socket.broadcast.to(data.roomId).emit('room-left');
-        // socket.leave(data.roomId);
     });
 });
 

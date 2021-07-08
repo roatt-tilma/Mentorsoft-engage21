@@ -388,9 +388,6 @@ socket.on('room-left', () => {
     peer.close();
     remove_guest_name_from_info();
     alert(`${GUEST_NAME} has left the room! Redirecting to homepage...`);
-    // const information = 'Waiting for someone to join...<br><br>You can start chatting as soon as someone joins!';
-    // show_full_overlay_content_for_host(information);
-    // disable_chat();
     window.location.href = '/';
 });
 

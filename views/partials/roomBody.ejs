@@ -94,7 +94,13 @@
 
 <!-- new message notification -->
 
-<div id="new-message-notification" class="new-message-notification">New Message!</div>
+<div id="new-message-notification" class="new-message-notification">
+    <% if (userType === 'Host'){%>
+        New Message from <%= roomDet.guest.name %>!
+    <%}else{%>
+        New Message from <%= roomDet.host.name%>
+    <%}%>
+</div>
 
 <!-- audio on off notification icon -->
 
