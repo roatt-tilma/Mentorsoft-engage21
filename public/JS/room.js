@@ -21,9 +21,9 @@ const video_icon = document.getElementById('video-icon');
 
 const audio_btn = document.getElementById('audio-btn');
 const audio_icon = document.getElementById('audio-icon');
+const other_audio_icon = document.getElementById('other-audio-icon');
 
 const screen_share_btn = document.getElementById('screen-share-btn');
-const screen_share_icon = document.getElementById('screen-share-icon');
 
 const end_call_btn = document.getElementById('end-call-btn');
 
@@ -43,6 +43,7 @@ const msg_send = document.getElementById('msg-send');
 
 const chat_icon = document.getElementById('chat-icon');
 const chat_window = document.getElementById('chat-window');
+const new_message_notification = document.getElementById('new-message-notification')
 
 const id_copy = document.getElementById('id-copy');
 const password_copy = document.getElementById('password-copy');
@@ -91,8 +92,13 @@ socket.on('join-room', async (roomDet) => {
         console.log('connection open in Host Side');
         enable_chat();
     }
-    dataChannel.onmessage = (e) => {
+    dataChannel.onmessage = async (e) => {
         display_msg(GUEST_NAME, e.data);
+        if(!chat_window_open){
+            new_message_notification.classList.add('show-new-message-notification');
+            await new Promise(r => setTimeout(r, 3000));
+            new_message_notification.classList.remove('show-new-message-notification');
+        }
     };
 
     msg_data.addEventListener('keyup', (e) => {
@@ -241,6 +247,11 @@ var audio_bool = false;
 
 audio_btn.onclick = () => {
     audio_bool = !audio_bool;
+
+    socket.emit('audio-on-off', {
+        roomId: ROOM_ID
+    });
+
     stream.getAudioTracks()[0].enabled = audio_bool;
     console.log(audio_track);
     if(audio_track !== null) audio_track.enabled = audio_bool;
@@ -250,10 +261,21 @@ audio_btn.onclick = () => {
     audio_icon.classList.toggle('fa-microphone-slash');
 }
 
+socket.on('audio-on-off', () => {
+    other_audio_icon.classList.toggle('fa');
+    other_audio_icon.classList.toggle('fa-microphone');
+    other_audio_icon.classList.toggle('fas');
+    other_audio_icon.classList.toggle('fa-microphone-slash');
+});
+
 
 // chat display 
 
+var chat_window_open = false;
+
 chat_icon.onclick = () => {
+    chat_window_open = !chat_window_open;
+    if(chat_window_open) new_message_notification.classList.remove('show-new-message-notification');
     chat_window.classList.toggle('chat-show');
 }
 
@@ -556,8 +578,13 @@ function createPeer(){
         console.log(e.channel);
         peer.dc = e.channel;
         peer.dc.onopen = () => console.log('connection open in Guest Side');
-        peer.dc.onmessage = (event) =>  {
+        peer.dc.onmessage = async (event) =>  {
             display_msg(HOST_NAME, event.data);
+            if(!chat_window_open){
+                new_message_notification.classList.add('show-new-message-notification');
+                await new Promise(r => setTimeout(r, 3000));
+                new_message_notification.classList.remove('show-new-message-notification');
+            }
         }
 
         msg_data.addEventListener('keyup', (event) => {

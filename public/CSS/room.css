@@ -106,6 +106,15 @@ body{
     margin-left: 5px;
 }
 
+.other-audio-icon{
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    width: 25px;
+    z-index: 9;
+    color: #fff;
+}
+
 .video-buttons button{
     height: 40px;
     width: 40px;
@@ -113,11 +122,13 @@ body{
     background-color: #4548F4;
     border: none;
     cursor: pointer;
+    padding: 8px;
 }
 
 .video-buttons button em{
     color: white;
 }
+
 
 .info{
     border: none;
@@ -333,7 +344,7 @@ body{
     border: none;
     border-radius: 100px;
     width: 150px;
-    height: 50px;
+    height: 40px;
     background: #4548F4;
     color: #fff;
     box-shadow: 0 3px 20px rgb(0 0 0 / 20%);
@@ -349,11 +360,38 @@ body{
 }
 
 
-
-
 .chat-show {
     display: flex;
     margin-right: 0;
+}
+
+.new-message-notification{
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-top: -50px;
+    padding: 0.6rem 0 0 0;
+    text-align: center;
+
+    height: 30px;
+    width: 100%;
+    z-index: 100;
+
+    color: #fff;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.05rem;
+
+    border: none;
+    background-color: #4548F4;
+    
+    transition: all 0.4s ease;
+}
+
+
+.show-new-message-notification{
+    margin-top: 0;
 }
 
 .hide-full-overlay{
