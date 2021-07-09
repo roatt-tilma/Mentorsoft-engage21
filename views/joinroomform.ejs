@@ -22,12 +22,6 @@
                     <%}%>
                 </div>
                 <input type="text" onfocus="hide_error" name="guestName" id="guestName" placeholder="Your Name">
-                <div>
-                    <input type="text" onfocus="hide_error" name="roomPassword" id="roomPassword" placeholder="Room Password" required>
-                    <%if (error === 'passwordWrong'){%>
-                        <br><span class="joinRoomError">Wrong Password!</span>
-                    <%}%>
-                </div>
                 <input class="btn" type="submit" value="JOIN ROOM">
             </form>
             <p>Want to host? <a href="/host">Click Here</a></p>

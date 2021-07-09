@@ -46,7 +46,6 @@ const chat_window = document.getElementById('chat-window');
 const new_message_notification = document.getElementById('new-message-notification')
 
 const id_copy = document.getElementById('id-copy');
-const password_copy = document.getElementById('password-copy');
 
 
 const full_overlay = document.getElementById('full-overlay');
@@ -315,7 +314,6 @@ document.onclick = (e) =>{
         && e.target.className !== 'info-list-elements'
         && e.target.id !== 'arrow'
         && e.target.id !== 'id-copy'
-        && e.target.id !== 'password-copy'
         && check === 1){
         info.style.display = 'none';
         check = 0;
@@ -324,10 +322,6 @@ document.onclick = (e) =>{
 
 id_copy.onclick = () => {
     copy_helper(id_copy, ROOM_ID);
-}
-
-password_copy.onclick = () => {
-    copy_helper(password_copy, ROOM_PASSWORD);
 }
 
 

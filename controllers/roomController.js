@@ -11,18 +11,12 @@ const randomId = () => {
 
 }
 
-const randomPassword = () => {
-    return Math.floor((Math.random())*0x10000)
-        .toString();
-}
-
 
 const roomDetails = new Map();
 
 const create_room = (req, res) => {
     const roomId = randomId();
     let roomName = req.body.roomName;
-    let roomPassword = req.body.roomPassword;
     const hostId = randomId();
     let hostName = req.body.hostName;
     let guestId = null;
@@ -30,8 +24,7 @@ const create_room = (req, res) => {
     const userType = 'Host';
 
     if (!hostName) hostName = 'Host';
-    if (!roomName) roomName = `Meeting Room`;
-    if (!roomPassword) roomPassword = randomPassword();
+    if (!roomName) roomName = 'Meeting Room';
 
 
     roomDetails.set(roomId, {
@@ -46,7 +39,6 @@ const create_room = (req, res) => {
         room: {
             id: roomId,
             name: roomName,
-            password: roomPassword
         },
         isFull: 0
     });
@@ -59,13 +51,10 @@ const create_room = (req, res) => {
 
 
 const connect_guest = (req, res) => {
-    const givenPassword = req.body.roomPassword;
     const roomId = req.body.roomId;
 
     const roomDet = roomDetails.get(roomId);
     if (roomDet){
-
-        const roomPassword = roomDet.room.password;
         
         const guestId = randomId();
         let guestName = req.body.guestName;
@@ -74,17 +63,12 @@ const connect_guest = (req, res) => {
         
         if (!guestName) guestName = 'Guest';
         
-        if (givenPassword === roomPassword && roomDet.isFull === 0){
+        if (roomDet.isFull === 0){
             roomDet.guest.name = guestName;
             roomDet.guest.id = guestId;
             roomDet.isFull = 1;
             res.render('room', { title: roomId, roomDet, userType});
         }
-        
-        else if(givenPassword !== roomPassword){
-            res.render('joinroomform', { title: 'Guest', error:'passwordWrong' });
-        }
-        
         else{
             res.render('joinroomform', { title: 'Guest', error:'roomFull' });
         }
