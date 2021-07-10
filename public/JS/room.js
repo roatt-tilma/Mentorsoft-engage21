@@ -482,13 +482,27 @@ hide_show.onclick = () => {
 // functions related to webRTC connection
 
 function createPeer(){
+    
+    let turnServerUrls;
+    let turnServerCredential;
+    let turnServerUsername;
+
+    if (USER_TYPE === 'Guest'){
+        turnServerUrls = GUEST_TURN_SERVER_URLS;
+        turnServerCredential = GUEST_TURN_SERVER_CREDENTIAL;
+        turnServerUsername = GUEST_TURN_SERVER_USERNAME;    
+    } else{
+        turnServerUrls = HOST_TURN_SERVER_URLS;
+        turnServerCredential = HOST_TURN_SERVER_CREDENTIAL;
+        turnServerUsername = HOST_TURN_SERVER_USERNAME;
+    }
 
     const peer = new RTCPeerConnection({
         iceServers: [
             {
-                urls: 'turn:numb.viagenie.ca',
-                credential: 'I1server',
-                username: 'roarout20@gmail.com',
+                urls: turnServerUrls,
+                credential: turnServerCredential,
+                username: turnServerUsername
             },
             {urls:'stun:stun.l.google.com:19302'},
             {urls:'stun:stunserver.org'},
@@ -560,6 +574,7 @@ function createPeer(){
         }
     
         if (e.candidate){
+            console.log(e.candidate);
             socket.emit('candidate', payload);
         }
     
@@ -567,8 +582,6 @@ function createPeer(){
 
     //when new data channel is created - code used only by guest
     peer.ondatachannel = (e) => {
-        console.log('in on data channel!!');
-        console.log(e.channel);
         peer.dc = e.channel;
         peer.dc.onopen = () => console.log('connection open in Guest Side');
         peer.dc.onmessage = async (event) =>  {

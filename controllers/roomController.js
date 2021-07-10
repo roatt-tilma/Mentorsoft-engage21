@@ -1,4 +1,5 @@
 const { io }  = require('../server');
+const relayToken = require('../relay-token-quickstart/relay-token');
 
 const randomId = () => {
     
@@ -14,10 +15,14 @@ const randomId = () => {
 
 const roomDetails = new Map();
 
-const create_room = (req, res) => {
+const create_room = async (req, res) => {
+    const data = await relayToken();
+
+    console.log(data);
+
     const roomId = randomId();
     let roomName = req.body.roomName;
-    const hostId = randomId();
+    const hostId = data.userId;
     let hostName = req.body.hostName;
     let guestId = null;
     let guestName = null;
@@ -30,11 +35,17 @@ const create_room = (req, res) => {
     roomDetails.set(roomId, {
         host: {
             id: hostId,
-            name: hostName
+            name: hostName,
+            turnServerUrls: data.turnServerConfig.urls,
+            turnServerCredential: data.turnServerConfig.credential,
+            turnServerUsername: data.turnServerConfig.username
         },
         guest: {
             id: guestId,
-            name: guestName
+            name: guestName,
+            turnServerUrls: null,
+            turnServerCredential: null,
+            turnServerUsername: null
         },
         room: {
             id: roomId,
@@ -50,13 +61,16 @@ const create_room = (req, res) => {
 }
 
 
-const connect_guest = (req, res) => {
+const connect_guest = async (req, res) => {
+
+    const data  = await relayToken();
+
     const roomId = req.body.roomId;
 
     const roomDet = roomDetails.get(roomId);
     if (roomDet){
         
-        const guestId = randomId();
+        const guestId = data.userId;
         let guestName = req.body.guestName;
         
         const userType = 'Guest';
@@ -64,9 +78,14 @@ const connect_guest = (req, res) => {
         if (!guestName) guestName = 'Guest';
         
         if (roomDet.isFull === 0){
+            
             roomDet.guest.name = guestName;
             roomDet.guest.id = guestId;
             roomDet.isFull = 1;
+            roomDet.guest.turnServerUrls = data.turnServerConfig.urls;
+            roomDet.guest.turnServerCredential = data.turnServerConfig.credential;
+            roomDet.guest.turnServerUsername = data.turnServerConfig.username;
+
             res.render('room', { title: roomId, roomDet, userType});
         }
         else{
