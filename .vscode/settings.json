@@ -1,4 +1,4 @@
 {
-    "appService.defaultWebAppToDeploy": "/subscriptions/601f764c-4b24-4571-bb56-5048905c79e7/resourceGroups/Mentorsoft/providers/Microsoft.Web/sites/mentorsoft",
-    "appService.deploySubpath": "."
+    "appService.deploySubpath": ".",
+    "appService.defaultWebAppToDeploy": "/subscriptions/601f764c-4b24-4571-bb56-5048905c79e7/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/mentorsoft"
 }
