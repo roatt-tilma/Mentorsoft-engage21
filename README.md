@@ -36,6 +36,7 @@ NOTE: WebRTC forces you to use secured network. Make sure its running on https.
   - It is retricted to only two users in a room
   - meeting can only be started once
   - leaving the room will end the room for both
+  - screen can only be shared when your video in on
 
 NOTE: Use pc for best experience
 
