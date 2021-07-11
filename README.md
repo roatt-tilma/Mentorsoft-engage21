@@ -1,8 +1,6 @@
 # Mentorsoft-engage21
 
 ![language](https://img.shields.io/github/languages/top/roatt-tilma/Mentorsoft-engage21?style=for-the-badge)
-![language](https://img.shields.io/github/languages/top/roatt-tilma/Mentorsoft-engage21?style=for-the-badge)
-![language](https://img.shields.io/github/languages/top/roatt-tilma/Mentorsoft-engage21?style=for-the-badge)
 
 This project is being developed for Microsoft Engage 2021 mentorship program. This is a clone of Microsoft Teams.
 
@@ -17,7 +15,7 @@ Tech Stack:
   - Javascript
       - WebRTC using regular javascript APIs
       - socket.io library
-  - HTML/CSS
+  - EJS/CSS
   - Azure Communication Services for TURN relay
 
 
@@ -35,4 +33,7 @@ Features:
 Restrictions:
   - It is retricted to only two users in a room
   - meeting can only be started once
-  - leaving the room will end the room for all
+  - leaving the room will end the room for both
+  - not responsive
+
+
