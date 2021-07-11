@@ -439,6 +439,8 @@ screen_share_btn.onclick = async () => {
                 share_bool = false;
                 if(video_bool) enable_screen_share();
                 audio_track = null;
+                screen.getAudioTracks[0].enabled = false;
+                screen.getVideoTracks[0].enabled = false;
                 screen = null;
             };
 
