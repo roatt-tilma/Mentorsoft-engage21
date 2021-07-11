@@ -254,7 +254,6 @@ audio_btn.onclick = () => {
     });
 
     stream.getAudioTracks()[0].enabled = audio_bool;
-    console.log(audio_track);
     if(audio_track !== null) audio_track.enabled = audio_bool;
     audio_icon.classList.toggle('fa');
     audio_icon.classList.toggle('fa-microphone');
@@ -439,8 +438,6 @@ screen_share_btn.onclick = async () => {
                 share_bool = false;
                 if(video_bool) enable_screen_share();
                 audio_track = null;
-                screen.getAudioTracks[0].enabled = false;
-                screen.getVideoTracks[0].enabled = false;
                 screen = null;
             };
 
