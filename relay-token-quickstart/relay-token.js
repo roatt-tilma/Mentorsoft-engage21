@@ -13,7 +13,7 @@ const relayToken = async () => {
 
     const config = await relayClient.getRelayConfiguration(identityResponse);
 
-    console.log('relayToken function called');
+    console.log(config);
 
     return {
         userId: identityResponse.communicationUserId,
