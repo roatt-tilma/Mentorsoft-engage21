@@ -8,7 +8,9 @@ This project is being developed for Microsoft Engage 2021 mentorship program. Th
 
 It is currently hosted on heroku.
 
-url: <a href = "https://mentorsoft.herokuapp.com" target = "_blank">https://mentorsoft.herokuapp.com</a>
+Website url: <a href = "https://mentorsoft.herokuapp.com" target = "_blank">https://mentorsoft.herokuapp.com</a>
+
+Watch video demo <a href = "https://youtu.be/dMqfqSm9Pqk" target = "_blank">here</a>
 
 NOTE: WebRTC forces you to use secured network. Make sure its running on https.
 
